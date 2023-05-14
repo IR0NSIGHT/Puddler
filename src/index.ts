@@ -6,12 +6,38 @@ function log(mssg: string) {
 }
 
 function getNeighbours(pos: point): point[] {
-  return [
-    addPoints({ x: -1, y: 0 }, pos),
-    addPoints({ x: 1, y: 0 }, pos),
-    addPoints({ x: 0, y: -1 }, pos),
-    addPoints({ x: 0, y: 1 }, pos),
-  ];
+  switch ((pos.x + pos.y) % 4) {
+    case 0:
+      return [
+        addPoints({ x: -1, y: 0 }, pos),
+        addPoints({ x: 1, y: 0 }, pos),
+        addPoints({ x: 0, y: -1 }, pos),
+        addPoints({ x: 0, y: 1 }, pos),
+      ];
+    case 1:
+      return [
+        addPoints({ x: 1, y: 0 }, pos),
+        addPoints({ x: 0, y: -1 }, pos),
+        addPoints({ x: 0, y: 1 }, pos),
+        addPoints({ x: -1, y: 0 }, pos),
+      ];
+    case 2:
+      return [
+        addPoints({ x: 0, y: -1 }, pos),
+        addPoints({ x: 0, y: 1 }, pos),
+        addPoints({ x: -1, y: 0 }, pos),
+        addPoints({ x: 1, y: 0 }, pos),
+      ];
+    case 3:
+      return [
+        addPoints({ x: 0, y: 1 }, pos),
+        addPoints({ x: -1, y: 0 }, pos),
+        addPoints({ x: 1, y: 0 }, pos),
+        addPoints({ x: 0, y: -1 }, pos),
+      ];
+    default:
+      throw new Error("impossible");
+  }
 }
 
 function addPoints(a: point, b: point): point {
@@ -49,13 +75,21 @@ const isMarked = (pos: point, id: number): boolean => {
 const assert = (cond: boolean, mssg: string) => {
   if (!cond) throw new Error("condition hurt: " + mssg);
 };
+
+type parentedPoint = { point: point; parent: parentedPoint | undefined };
 /**
  * find the point closest to pos thats at least one block lower
  * @param pos
  * @param posZ
  * @returns
  */
-function findClosestDrop(pos: point, posZ: number, floor: boolean): point {
+
+function findClosestDrop(
+  pos: point,
+  posZ: number,
+  floor: boolean,
+  blacklist?: parentedPoint[]
+): point[] {
   log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor);
   var seenSet: string[] = [];
   const markSeen = (pos: point) => {
@@ -64,28 +98,26 @@ function findClosestDrop(pos: point, posZ: number, floor: boolean): point {
   const isSeen = (pos: point) => {
     return seenSet.indexOf(JSON.stringify(pos)) !== -1;
   };
-  var queue = [pos];
-  var closed = [];
-  var next;
+  var queue: parentedPoint[] = [{ point: pos, parent: undefined }];
+  let next: parentedPoint;
   var safetyIterator = 0;
   markSeen(pos);
   while (queue.length != 0 && safetyIterator < 10000) {
-    next = queue.shift() as point;
-    const nextDetail = { x: next.x, y: next.y, z: getZ(next, floor) };
-    closed.push(nextDetail);
+    next = queue.shift() as parentedPoint;
+
     //make sure position is not yet marked
 
     //abort condition
-    if (getZ(next, floor) < posZ) {
-      return next; //TODO return path to next
+    if (getZ(next.point, floor) < posZ) {
+      return [next.point]; //TODO return path to next
     }
 
-    var neighbours = getNeighbours(next);
+    var neighbours = getNeighbours(next.point);
     neighbours.forEach(function (n) {
       if (getZ(n, floor) <= posZ && !isSeen(n)) {
         //unknown point
         markSeen(n);
-        queue.push(n); //add to queue
+        queue.push({ point: n, parent: next }); //add to queue
       }
     });
     safetyIterator++;
@@ -95,19 +127,19 @@ function findClosestDrop(pos: point, posZ: number, floor: boolean): point {
     log("try again with flooring");
     return findClosestDrop(pos, Math.floor(posZ), true);
   }
-  closed.forEach((a) => {
-    markPos(a, 13);
-    log("closed[]:" + JSON.stringify(a));
-  });
   log("failed to find lower drop, return original " + JSON.stringify(pos));
-  return pos;
+  return [];
 }
 
 const pointsEqual = (a: point, b: point) => {
   return a.x == b.x && a.y == b.y;
 };
 
-function pathDownhill(pos: point) {
+/**
+ * start a new river path at this position
+ * @param pos
+ */
+function pathRiverFrom(pos: point) {
   log("path downhill from:" + JSON.stringify(pos));
   var path = [pos];
   var i = 0;
@@ -115,11 +147,12 @@ function pathDownhill(pos: point) {
   let waterReached = false;
   while (i < 1000) {
     i++;
-    var next = findClosestDrop(current, getZ(current), false);
-    if (pointsEqual(next, current))
+    const pathToDrop = findClosestDrop(current, getZ(current), false);
+    if (pathToDrop.length == 0)
       //abort if closestDrop coulndt find anything
       break;
-    current = next;
+
+    current = pathToDrop[pathToDrop.length - 1];
 
     if (isWater(current) || isMarked(current, 37)) {
       waterReached = true;
@@ -143,4 +176,10 @@ function pathDownhill(pos: point) {
 var pos = { x: 851, y: 1353 };
 
 //pathDownhill(pos);
-pathDownhill({ x: 627, y: 1418 });
+pathRiverFrom({ x: 627, y: 1418 });
+
+for (let x = 0; x < 10; x++) {
+  for (let y = 0; y < 10; y++) {
+    pathRiverFrom({ x: x * 100, y: y * 100 });
+  }
+}
