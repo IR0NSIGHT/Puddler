@@ -1,3 +1,5 @@
+import "core-js/es/set";
+
 type point = { x: number; y: number };
 
 function log(mssg: string) {
@@ -51,8 +53,30 @@ function isWater(pos: point) {
   return terrainZ < dimension.getWaterLevelAt(pos.x, pos.y);
 }
 
-function findClosestDrop(pos: point, targetZ: number) {
-  var seenSet: point[] = [];
+const isMarked = (pos: point, id: number): boolean => {
+  return (
+    dimension.getTerrainAt(pos.x, pos.y).getName() ==
+    getTerrainById(id).getName()
+  );
+};
+
+const assert = (cond: boolean, mssg: string) => {
+  if (!cond) throw new Error("condition hurt: " + mssg);
+};
+/**
+ * find the point closest to pos thats at least one block lower
+ * @param pos
+ * @param posZ
+ * @returns
+ */
+function findClosestDrop(pos: point, posZ: number) {
+  var seenSet: string[] = [];
+  const markSeen = (pos: point) => {
+    seenSet.push(JSON.stringify(pos));
+  };
+  const isSeen = (pos: point) => {
+    return seenSet.indexOf(JSON.stringify(pos)) !== -1;
+  };
   var queue = [pos];
   var next;
   var safetyIterator = 0;
@@ -60,22 +84,24 @@ function findClosestDrop(pos: point, targetZ: number) {
 
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as point;
-
     markPos(next, 13);
+    //make sure position is not yet marked
+
     //abort condition
-    if (Math.floor(getZ(next)) < targetZ) {
-      log("found lower at z=" + getZ(next) + " vs targetZ=" + targetZ);
+    if (Math.floor(getZ(next)) < posZ) {
+      log("found lower at z=" + getZ(next) + " vs targetZ=" + posZ);
       return next; //TODO return path to next
     }
 
     var neighbours = getNeighbours(next);
     neighbours.forEach(function (n) {
-      if (Math.floor(getZ(n)) <= targetZ && seenSet.indexOf(n) == -1) {
+      if (Math.floor(getZ(n)) <= posZ && !isSeen(n)) {
         //unknown point
-        seenSet.push(n);
+        markSeen(n);
         queue.push(n); //add to queue
       }
     });
+    log("seen: " + JSON.stringify(seenSet));
     safetyIterator++;
   }
   log("no drop found after " + safetyIterator + " iterations, abort");
@@ -84,12 +110,17 @@ function findClosestDrop(pos: point, targetZ: number) {
 }
 
 function pathDownhill(pos: point) {
+  log("path downhill from:" + JSON.stringify(pos));
   var path = [pos];
   var i = 0;
   var current = pos;
+  let waterReached = false;
   while (i < 10000) {
     var next = advanceDownhill(current);
-    if (isWater(next)) break;
+    if (isWater(next)) {
+      waterReached = true;
+      break;
+    }
     if (next == current) {
       var nextLower = findClosestDrop(next, Math.floor(getZ(next)));
       if (nextLower == next)
@@ -104,11 +135,27 @@ function pathDownhill(pos: point) {
     path.push(current);
     markPos(current, 37);
     log(JSON.stringify(current));
-    i = i + 1;
+    i++;
   }
+  log(
+    "finished path, reached water: " +
+      waterReached +
+      " path length: " +
+      path.length +
+      " end:" +
+      JSON.stringify(path[path.length - 1])
+  );
 }
 
 var pos = { x: 851, y: 1353 };
 
-pathDownhill(pos);
+//pathDownhill(pos);
 pathDownhill({ x: 627, y: 1418 });
+
+const set = new Set<number>();
+set.add(1);
+set.add(2);
+set.add(3);
+
+log("" + set.has(2)); // true
+log("" + set.size); // 3
