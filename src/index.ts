@@ -1,5 +1,3 @@
-import "core-js/es/set";
-
 type point = { x: number; y: number };
 
 function log(mssg: string) {
