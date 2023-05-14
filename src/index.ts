@@ -78,7 +78,6 @@ function findClosestDrop(pos: point, posZ: number) {
   var queue = [pos];
   var next;
   var safetyIterator = 0;
-  log("find drop from pos=" + JSON.stringify(pos));
 
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as point;
@@ -87,7 +86,6 @@ function findClosestDrop(pos: point, posZ: number) {
 
     //abort condition
     if (Math.floor(getZ(next)) < posZ) {
-      log("found lower at z=" + getZ(next) + " vs targetZ=" + posZ);
       return next; //TODO return path to next
     }
 
@@ -99,13 +97,15 @@ function findClosestDrop(pos: point, posZ: number) {
         queue.push(n); //add to queue
       }
     });
-    log("seen: " + JSON.stringify(seenSet));
     safetyIterator++;
   }
-  log("no drop found after " + safetyIterator + " iterations, abort");
-  log("seen list: " + seenSet.length);
+  log("failed to find lower drop, return original " + JSON.stringify(pos));
   return pos;
 }
+
+const pointsEqual = (a: point, b: point) => {
+  return a.x == b.x && a.y == b.y;
+};
 
 function pathDownhill(pos: point) {
   log("path downhill from:" + JSON.stringify(pos));
@@ -113,27 +113,29 @@ function pathDownhill(pos: point) {
   var i = 0;
   var current = pos;
   let waterReached = false;
-  while (i < 10000) {
+  while (i < 1000) {
+    i++;
     var next = advanceDownhill(current);
-    if (isWater(next)) {
+    if (isWater(next) || isMarked(next, 37)) {
       waterReached = true;
       break;
     }
-    if (next == current) {
+    if (pointsEqual(current, next)) {
+      log("find closest drop from " + JSON.stringify(next));
       var nextLower = findClosestDrop(next, Math.floor(getZ(next)));
-      if (nextLower == next)
+      log("drop at: " + JSON.stringify(nextLower));
+      if (pointsEqual(nextLower, next))
         //abort if closestDrop coulndt find anything
         break;
-      next = nextLower; //use found pos
-      markPos(next, 14);
-      return; //restart with a lower point
+      current = nextLower; //use found pos
+      markPos(current, 14);
+      continue; //restart with a lower point
     }
 
     current = next;
     path.push(current);
     markPos(current, 37);
-    log(JSON.stringify(current));
-    i++;
+    log(JSON.stringify(current) + " z=" + getZ(current));
   }
   log(
     "finished path, reached water: " +
@@ -149,11 +151,3 @@ var pos = { x: 851, y: 1353 };
 
 //pathDownhill(pos);
 pathDownhill({ x: 627, y: 1418 });
-
-const set = new Set<number>();
-set.add(1);
-set.add(2);
-set.add(3);
-
-log("" + set.has(2)); // true
-log("" + set.size); // 3
