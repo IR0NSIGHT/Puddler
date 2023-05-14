@@ -77,19 +77,29 @@ const assert = (cond: boolean, mssg: string) => {
 };
 
 type parentedPoint = { point: point; parent: parentedPoint | undefined };
+
+const parentedToList = (
+  endPoint: parentedPoint,
+  list: parentedPoint[]
+): parentedPoint[] => {
+  list.push(endPoint);
+  log("push parented point: " + JSON.stringify(endPoint.point));
+  if (endPoint.parent === undefined) return list;
+  return parentedToList(endPoint.parent, list); //its recursion B)
+};
+
 /**
  * find the point closest to pos thats at least one block lower
  * @param pos
  * @param posZ
  * @returns
  */
-
 function findClosestDrop(
   pos: point,
   posZ: number,
   floor: boolean,
   blacklist?: parentedPoint[]
-): point[] {
+): parentedPoint[] {
   log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor);
   var seenSet: string[] = [];
   const markSeen = (pos: point) => {
@@ -105,11 +115,10 @@ function findClosestDrop(
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
 
-    //make sure position is not yet marked
-
     //abort condition
     if (getZ(next.point, floor) < posZ) {
-      return [next.point]; //TODO return path to next
+      log("listify endpoint:" + JSON.stringify(next));
+      return parentedToList(next, []); //TODO return path to next
     }
 
     var neighbours = getNeighbours(next.point);
@@ -141,7 +150,7 @@ const pointsEqual = (a: point, b: point) => {
  */
 function pathRiverFrom(pos: point) {
   log("path downhill from:" + JSON.stringify(pos));
-  var path = [pos];
+  var path: parentedPoint[] = [{ point: pos, parent: undefined }];
   var i = 0;
   var current = pos;
   let waterReached = false;
@@ -151,18 +160,20 @@ function pathRiverFrom(pos: point) {
     if (pathToDrop.length == 0)
       //abort if closestDrop coulndt find anything
       break;
-
-    current = pathToDrop[pathToDrop.length - 1];
+    log("path to drop: " + JSON.stringify(pathToDrop.map((a) => a.point)));
+    pathToDrop.forEach((a) => path.push(a));
+    current = pathToDrop[0].point;
 
     if (isWater(current) || isMarked(current, 37)) {
       waterReached = true;
       break;
     }
 
-    path.push(current);
-    markPos(current, 37);
     log(JSON.stringify(current) + " z=" + getZ(current));
   }
+  path.forEach((a) => {
+    markPos(a.point, 37);
+  });
   log(
     "finished path, reached water: " +
       waterReached +
