@@ -14,25 +14,13 @@ function getNeighbours(pos: point): point[] {
   ];
 }
 
-function advanceDownhill(pos: point): point {
-  var lowestZ = getZ(pos);
-  var stepPos = pos;
-  getNeighbours(pos).forEach(function (n) {
-    var neighZ = getZ(n);
-    if (neighZ < lowestZ) {
-      lowestZ = neighZ;
-      stepPos = n;
-    }
-  });
-  return stepPos;
-}
-
 function addPoints(a: point, b: point): point {
   return { x: a.x + b.x, y: a.y + b.y };
 }
 
-function getZ(pos: point): number {
-  return dimension.getHeightAt(pos.x, pos.y);
+function getZ(pos: point, floor?: boolean): number {
+  const z = dimension.getHeightAt(pos.x, pos.y);
+  return floor ? Math.floor(z) : z;
 }
 
 function getTerrainById(terrainId: number) {
@@ -67,7 +55,8 @@ const assert = (cond: boolean, mssg: string) => {
  * @param posZ
  * @returns
  */
-function findClosestDrop(pos: point, posZ: number) {
+function findClosestDrop(pos: point, posZ: number, floor: boolean): point {
+  log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor);
   var seenSet: string[] = [];
   const markSeen = (pos: point) => {
     seenSet.push(JSON.stringify(pos));
@@ -76,22 +65,24 @@ function findClosestDrop(pos: point, posZ: number) {
     return seenSet.indexOf(JSON.stringify(pos)) !== -1;
   };
   var queue = [pos];
+  var closed = [];
   var next;
   var safetyIterator = 0;
-
+  markSeen(pos);
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as point;
-    markPos(next, 13);
+    const nextDetail = { x: next.x, y: next.y, z: getZ(next, floor) };
+    closed.push(nextDetail);
     //make sure position is not yet marked
 
     //abort condition
-    if (Math.floor(getZ(next)) < posZ) {
+    if (getZ(next, floor) < posZ) {
       return next; //TODO return path to next
     }
 
     var neighbours = getNeighbours(next);
     neighbours.forEach(function (n) {
-      if (Math.floor(getZ(n)) <= posZ && !isSeen(n)) {
+      if (getZ(n, floor) <= posZ && !isSeen(n)) {
         //unknown point
         markSeen(n);
         queue.push(n); //add to queue
@@ -99,6 +90,15 @@ function findClosestDrop(pos: point, posZ: number) {
     });
     safetyIterator++;
   }
+  if (!floor) {
+    //try again with rounded numbers
+    log("try again with flooring");
+    return findClosestDrop(pos, Math.floor(posZ), true);
+  }
+  closed.forEach((a) => {
+    markPos(a, 13);
+    log("closed[]:" + JSON.stringify(a));
+  });
   log("failed to find lower drop, return original " + JSON.stringify(pos));
   return pos;
 }
@@ -115,24 +115,17 @@ function pathDownhill(pos: point) {
   let waterReached = false;
   while (i < 1000) {
     i++;
-    var next = advanceDownhill(current);
-    if (isWater(next) || isMarked(next, 37)) {
+    var next = findClosestDrop(current, getZ(current), false);
+    if (pointsEqual(next, current))
+      //abort if closestDrop coulndt find anything
+      break;
+    current = next;
+
+    if (isWater(current) || isMarked(current, 37)) {
       waterReached = true;
       break;
     }
-    if (pointsEqual(current, next)) {
-      log("find closest drop from " + JSON.stringify(next));
-      var nextLower = findClosestDrop(next, Math.floor(getZ(next)));
-      log("drop at: " + JSON.stringify(nextLower));
-      if (pointsEqual(nextLower, next))
-        //abort if closestDrop coulndt find anything
-        break;
-      current = nextLower; //use found pos
-      markPos(current, 14);
-      continue; //restart with a lower point
-    }
 
-    current = next;
     path.push(current);
     markPos(current, 37);
     log(JSON.stringify(current) + " z=" + getZ(current));
