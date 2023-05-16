@@ -40,8 +40,7 @@ const rivers = startPoints.map((start) => {
           " z=" +
           getZ(riverEnd, true)
       );
-      const puddleDepth = 6;
-      const layers = collectPuddleLayers(riverEnd, 6, 10000);
+      const layers = collectPuddleLayers(riverEnd, 6, 5000);
       const bottomZ = getZ(riverEnd, true);
       layers.forEach((l: point[], idx: number) => {
         floodToLevel(l, bottomZ + layers.length - 1);
@@ -62,4 +61,3 @@ log("t=" + t.stop());
 //timePointSet();
 
 //t=50716
-

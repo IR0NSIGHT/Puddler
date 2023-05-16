@@ -45,7 +45,7 @@ export const collectPuddleLayers = (
       nextLevelOpen,
       seenSet,
       level,
-      maxSurface,
+      maxSurface - totalSurface, //remaining surface
       (p: point) => false
     );
     log(
