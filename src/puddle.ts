@@ -66,7 +66,13 @@ export const collectPuddleLayers = (
     //prepare next run
     nextLevelOpen = border;
   }
-  log("collected " + surfaceLayers.length + " layers");
+  log(
+    "collected " +
+      surfaceLayers.length +
+      " layers, " +
+      totalSurface +
+      " surfaceTotal"
+  );
   return surfaceLayers;
 };
 

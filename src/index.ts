@@ -35,13 +35,19 @@ const rivers = startPoints.map((start) => {
     const riverEnd = riverPath[riverPath.length - 1];
     if (!isWater(riverEnd)) {
       log(
-        "puddlify river end at " +
+        "puddlify river, lenght = " +
+          riverPath.length +
+          "end at " +
           JSON.stringify(riverEnd) +
           " z=" +
           getZ(riverEnd, true)
       );
+      const myTimer = timer();
+      myTimer.start();
       const layers = collectPuddleLayers(riverEnd, 6, 5000);
       const bottomZ = getZ(riverEnd, true);
+      log("collection took " + myTimer.stop() + " millis");
+      log("flood puddle");
       layers.forEach((l: point[], idx: number) => {
         floodToLevel(l, bottomZ + layers.length - 1);
       });

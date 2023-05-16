@@ -27,12 +27,12 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       break;
     log("path to drop: " + JSON.stringify(pathToDrop.map((a) => a.point)));
     for (let point of pathToDrop) {
-      if (isWater(point.point) || rivers.has(point.point)) {
+      if (isWater(point.point)) {
         waterReached = true;
         break;
       }
       path.push(point);
-      rivers.add(point.point);
+      // rivers.add(point.point);
     }
     if (waterReached) break;
     //end of path is droppoint
