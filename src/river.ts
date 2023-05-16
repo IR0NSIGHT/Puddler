@@ -13,7 +13,7 @@ import { floodToLevel, getZ, isWater, markPos } from "./terrain";
  * start a new river path at this position
  * @param pos
  */
-export const pathRiverFrom = (pos: point): point[] => {
+export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   log("path downhill from:" + JSON.stringify(pos));
   var path: parentedPoint[] = [{ point: pos, parent: undefined }];
   var i = 0;
@@ -26,16 +26,17 @@ export const pathRiverFrom = (pos: point): point[] => {
       //abort if closestDrop coulndt find anything
       break;
     log("path to drop: " + JSON.stringify(pathToDrop.map((a) => a.point)));
-    pathToDrop.forEach((a) => path.push(a));
+    for (let point of pathToDrop) {
+      if (isWater(point.point) || rivers.has(point.point)) {
+        waterReached = true;
+        break;
+      }
+      path.push(point);
+      rivers.add(point.point);
+    }
+    if (waterReached) break;
     //end of path is droppoint
     current = pathToDrop[pathToDrop.length - 1].point;
-
-    if (isWater(current)) {
-      //TODO abort if meets existing river
-      waterReached = true;
-      break;
-    }
-
     log(JSON.stringify(current) + " z=" + getZ(current));
   }
   return path.map((a) => a.point);

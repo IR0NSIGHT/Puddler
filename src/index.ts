@@ -1,3 +1,4 @@
+import { makeSet } from "./SeenSet";
 import {
   timeJavaHashset,
   timeJavaHashsetTupled,
@@ -27,8 +28,9 @@ startPoints.push({ x: 904, y: 286 });
 
 const t = timer();
 t.start();
+const allRiverPoints = makeSet();
 const rivers = startPoints.map((start) => {
-  const riverPath = pathRiverFrom(start);
+  const riverPath = pathRiverFrom(start, allRiverPoints);
   if (riverPath.length > 0) {
     const riverEnd = riverPath[riverPath.length - 1];
     if (!isWater(riverEnd)) {
@@ -58,3 +60,6 @@ log("t=" + t.stop());
 //timeJavaHashset();
 //timeJavaHashsetTupled();
 //timePointSet();
+
+//t=50716
+
