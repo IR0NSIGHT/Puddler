@@ -39,34 +39,9 @@ export const collectPuddleLayers = (
   const seenSet = makeSet();
   const surfaceLayers: point[][] = [];
 
-  const tileSet = makeSet();
   for (let level = getZ(start, true); level <= maxLevel; level++) {
     if (nextLevelOpen.length == 0) break;
     const remainingSurfaceBlocks = maxSurface - totalSurface;
-    const remainingSurfaceTiles = remainingSurfaceBlocks / (128 * 128);
-
-    //collect connected surface TILES at this level, see if they are to many
-    const tiles = collectSurfaceAndBorder(
-      nextLevelOpen.map(pointToTileCoords),
-      tileSet,
-      level,
-      remainingSurfaceTiles, //remaining surface
-      (p: point) => false,
-      (p: point) => dimension.getTile(p.x, p.y)?.getHighestIntHeight()
-    );
-    log(
-      "tested for tiles: " +
-        tiles.surface.length +
-        " surfaces from " +
-        remainingSurfaceTiles +
-        " remaining."
-    );
-    //failed early or exceeds remainingtiles
-    if (
-      remainingSurfaceTiles < tiles.surface.length ||
-      (tiles.surface.length == 0 && tiles.border.length == 0)
-    )
-      break;
 
     //collect surface BLOCKS
     const { surface, border } = collectSurfaceAndBorder(
@@ -77,14 +52,7 @@ export const collectPuddleLayers = (
       (p: point) => false,
       getZ
     );
-    log(
-      "collected layer: level=" +
-        level +
-        " size=" +
-        surface.length +
-        " borderSize=" +
-        border.length
-    );
+
     //stop if total surface would be exceeded
     if (totalSurface + surface.length > maxSurface) break;
 
@@ -95,13 +63,7 @@ export const collectPuddleLayers = (
     //prepare next run
     nextLevelOpen = border;
   }
-  log(
-    "collected " +
-      surfaceLayers.length +
-      " layers, " +
-      totalSurface +
-      " surfaceTotal"
-  );
+
   return surfaceLayers;
 };
 

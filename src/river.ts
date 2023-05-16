@@ -24,7 +24,6 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
     if (pathToDrop.length == 0)
       //abort if closestDrop coulndt find anything
       break;
-    log("path to drop: " + JSON.stringify(pathToDrop.map((a) => a.point)));
     for (let point of pathToDrop) {
       if (isWater(point.point)) {
         waterReached = true;
@@ -36,7 +35,6 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
     if (waterReached) break;
     //end of path is droppoint
     current = pathToDrop[pathToDrop.length - 1].point;
-    log(JSON.stringify(current) + " z=" + getZ(current));
   }
   return path.map((a) => a.point);
 };
@@ -66,16 +64,7 @@ function findClosestDrop(
 
     //abort condition
     if (getZ(next.point, floor) < posZ) {
-      log("listify endpoint:" + JSON.stringify(next));
       const path = parentedToList(next, []).reverse();
-      path.forEach((p) =>
-        log(
-          "point=" +
-            JSON.stringify(p.point) +
-            " parent=" +
-            JSON.stringify(p.parent?.point)
-        )
-      );
       return path; //TODO return path to next
     }
 

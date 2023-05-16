@@ -1,15 +1,13 @@
 import { makeSet } from "./SeenSet";
-import { pointToTileCoords } from "./Tile";
 import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { point } from "./point";
 import {
   collectPuddleLayers,
-  collectSurfaceAndBorder,
 } from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
-import { floodToLevel, getZ, isWater, markPos } from "./terrain";
+import { floodToLevel, getZ, isWater } from "./terrain";
 
 const startPoints: point[] = [];
 //for (let x = 0; x < 10; x++) {
@@ -63,45 +61,4 @@ rivers
   .forEach(applyRiverToTerrain);
 //collect puddles
 log("t=" + t.stop());
-//timeJavaHashset();
-//timeJavaHashsetTupled();
-//timePointSet();
 
-//t=50716
-
-const startPoint = { x: 1072, y: 188 };
-
-//collect connected surface TILES at this level, see if they are to many
-const tiles = collectSurfaceAndBorder(
-  [pointToTileCoords(startPoint)],
-  makeSet(),
-  70,
-  10, //remaining surface
-  (p: point) => false,
-  (p: point) => dimension.getTile(p.x, p.y)?.getHighestIntHeight()
-);
-
-log("found tiles:" + JSON.stringify(tiles));
-log(
-  "height at border: " +
-    JSON.stringify(
-      tiles.border.map((t) =>
-        dimension.getTile(t.x, t.y)?.getHighestIntHeight()
-      )
-    )
-);
-tiles.surface.forEach((t) => {
-  for (let x = t.x * 128; x < (t.x + 1) * 128; x++) {
-    for (let y = t.y * 128; y < (t.y + 1) * 128; y++) {
-      markPos({ x: x, y: y }, 37);
-    }
-  }
-});
-
-tiles.border.forEach((t) => {
-  for (let x = t.x * 128; x < (t.x + 1) * 128; x++) {
-    for (let y = t.y * 128; y < (t.y + 1) * 128; y++) {
-      markPos({ x: x, y: y }, 38);
-    }
-  }
-});
