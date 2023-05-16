@@ -1,3 +1,5 @@
+import { getZ } from "./terrain";
+
 export const pointsEqual = (a: point, b: point) => {
   return a.x == b.x && a.y == b.y;
 };
@@ -52,4 +54,8 @@ export const parentedToList = (
   list.push(endPoint);
   if (endPoint.parent === undefined) return list;
   return parentedToList(endPoint.parent, list); //its recursion B)
+};
+
+export const pointLowerThan = (pos: point, z: number) => {
+  return getZ(pos, true) < z;
 };
