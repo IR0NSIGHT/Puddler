@@ -45,10 +45,16 @@ export const collectPuddleLayers = (
       nextLevelOpen,
       seenSet,
       level,
+      maxSurface,
       (p: point) => false
     );
     log(
-      "collected layer: size=" + surface.length + " borderSize=" + border.length
+      "collected layer: level=" +
+        level +
+        " size=" +
+        surface.length +
+        " borderSize=" +
+        border.length
     );
     //stop if total surface would be exceeded
     if (totalSurface + surface.length > maxSurface) break;
@@ -60,6 +66,7 @@ export const collectPuddleLayers = (
     //prepare next run
     nextLevelOpen = border;
   }
+  log("collected " + surfaceLayers.length + " layers");
   return surfaceLayers;
 };
 
@@ -67,9 +74,9 @@ const collectSurfaceAndBorder = (
   openArr: point[],
   seenSet: SeenSet,
   level: number,
-  failIf: (p: point) => boolean
+  maxSurface: number,
+  failEarly: (p: point) => boolean
 ): { surface: point[]; border: point[] } => {
-  log("collect closed layer+border at level" + level);
   //use next level open that was collected before
   const surface: queue = makeQueue();
 
@@ -78,14 +85,16 @@ const collectSurfaceAndBorder = (
 
   //prepare open queue
   const open = makeQueue();
-  openArr.filter(isAtOrBelowSurfaceLevel).forEach(open.push);
-  openArr.filter((a) => !isAtOrBelowSurfaceLevel(a)).forEach(border.push);
+  openArr.forEach(open.push);
   openArr.forEach(seenSet.add);
 
+  let i = 0;
   while (!open.isEmpty()) {
+    i++;
+
     const currentPoint = open.pop();
 
-    if (failIf(currentPoint)) {
+    if (i > maxSurface || failEarly(currentPoint)) {
       log("fail early for: " + JSON.stringify(currentPoint));
       return { surface: [], border: [] };
     }

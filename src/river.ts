@@ -101,3 +101,7 @@ function findClosestDrop(
   log("failed to find lower drop, return original " + JSON.stringify(pos));
   return [];
 }
+
+export const capRiverStart = (river: point[]) => {
+  return river.slice(30);
+};

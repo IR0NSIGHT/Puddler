@@ -2,7 +2,7 @@ import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { point } from "./point";
 import { collectPuddle, collectPuddleLayers } from "./puddle";
-import { pathRiverFrom } from "./river";
+import { capRiverStart, pathRiverFrom } from "./river";
 import {
   floodToLevel,
   getTerrainById,
@@ -13,31 +13,41 @@ import {
 
 const startPoints: point[] = [];
 //for (let x = 0; x < 10; x++) {
-// for (let y = 0; y < 10; y++) {
-//   startPoints.push({ x: x * 100, y: y * 100 });
-// }
+//  for (let y = 0; y < 10; y++) {
+//    startPoints.push({ x: x * 100, y: y * 100 });
+//  }
 //}
+//
+////debug pathing
+//startPoints.push({ x: 627, y: 1418 });
+//startPoints.push({ x: 637, y: 1499 });
+//startPoints.push({ x: 799, y: 400 });
+startPoints.push({ x: 904, y: 286 });
 
-//debug pathing
-startPoints.push({ x: 627, y: 1418 });
-startPoints.push({ x: 637, y: 1499 });
-const rivers = startPoints.map(pathRiverFrom);
-rivers.forEach(applyRiverToTerrain);
+const rivers = startPoints.map((start) => {
+  const riverPath = pathRiverFrom(start);
+  if (riverPath.length > 0) {
+    const riverEnd = riverPath[riverPath.length - 1];
+    if (!isWater(riverEnd)) {
+      log(
+        "puddlify river end at " +
+          JSON.stringify(riverEnd) +
+          " z=" +
+          getZ(riverEnd, true)
+      );
+      const puddleDepth = 6;
+      const layers = collectPuddleLayers(riverEnd, 6, 10000);
+      const bottomZ = getZ(riverEnd, true);
+      layers.forEach((l: point[], idx: number) => {
+        floodToLevel(l, bottomZ + layers.length - 1);
+      });
+    }
+  }
+  return riverPath;
+});
+
+rivers
+  .map(capRiverStart)
+  .filter((r) => r.length > 50)
+  .forEach(applyRiverToTerrain);
 //collect puddles
-
-const puddles = rivers
-  .filter((r) => r.length > 0)
-  .map((r) => r[r.length - 1])
-  .filter((p) => !isWater(p))
-  .map((p) => {
-    const riverEnd = p;
-    log("puddlify river end at " + p + " z=" + getZ(p, true));
-    const puddleDepth = 6;
-    const layers = collectPuddleLayers(p, 6, 10000);
-    const bottomZ = getZ(riverEnd, true);
-    log("collected layers: " + JSON.stringify(layers));
-    layers.forEach((l: point[], idx: number) => {
-      //floodToLevel(l, bottomZ + puddleDepth)
-      l.forEach((p) => markPos(p, idx + 10));
-    });
-  });
