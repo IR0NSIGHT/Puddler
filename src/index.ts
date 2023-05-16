@@ -3,6 +3,7 @@ import {
   timeJavaHashsetTupled,
   timePointSet,
 } from "./TimeDebug";
+import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { point } from "./point";
@@ -19,11 +20,13 @@ const startPoints: point[] = [];
 //
 
 ////debug pathing
-//startPoints.push({ x: 627, y: 1418 });
-//startPoints.push({ x: 637, y: 1499 });
-//startPoints.push({ x: 799, y: 400 });
-//startPoints.push({ x: 904, y: 286 });
+startPoints.push({ x: 627, y: 1418 });
+startPoints.push({ x: 637, y: 1499 });
+startPoints.push({ x: 799, y: 400 });
+startPoints.push({ x: 904, y: 286 });
 
+const t = timer();
+t.start();
 const rivers = startPoints.map((start) => {
   const riverPath = pathRiverFrom(start);
   if (riverPath.length > 0) {
@@ -51,7 +54,7 @@ rivers
   .filter((r) => r.length > 50)
   .forEach(applyRiverToTerrain);
 //collect puddles
-
-timeJavaHashset();
-timeJavaHashsetTupled();
-timePointSet();
+log("t=" + t.stop());
+//timeJavaHashset();
+//timeJavaHashsetTupled();
+//timePointSet();

@@ -1,3 +1,4 @@
+import { SeenSet, makeSet } from "./SeenSet";
 import { log } from "./log";
 import {
   point,
@@ -53,18 +54,13 @@ function findClosestDrop(
   blacklist?: parentedPoint[]
 ): parentedPoint[] {
   log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor);
-  var seenSet: string[] = [];
-  if (blacklist !== undefined) blacklist.forEach((a) => markSeen(a.point));
-  const markSeen = (pos: point) => {
-    seenSet.push(JSON.stringify(pos));
-  };
-  const isSeen = (pos: point) => {
-    return seenSet.indexOf(JSON.stringify(pos)) !== -1;
-  };
+  var seenSet: SeenSet = makeSet();
+  if (blacklist !== undefined) blacklist.forEach((a) => seenSet.add(a.point));
+
   var queue: parentedPoint[] = [{ point: pos, parent: undefined }];
   let next: parentedPoint;
   var safetyIterator = 0;
-  markSeen(pos);
+  seenSet.add(pos);
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
 
@@ -85,9 +81,9 @@ function findClosestDrop(
 
     var neighbours = getNeighbourPoints(next.point);
     neighbours.forEach(function (n) {
-      if (getZ(n, floor) <= posZ && !isSeen(n)) {
+      if (getZ(n, floor) <= posZ && !seenSet.has(n)) {
         //unknown point
-        markSeen(n);
+        seenSet.add(n);
         queue.push({ point: n, parent: next }); //add to queue
       }
     });
