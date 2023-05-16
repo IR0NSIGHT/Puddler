@@ -102,6 +102,6 @@ function findClosestDrop(
   return [];
 }
 
-export const capRiverStart = (river: point[]) => {
-  return river.slice(30);
+export const capRiverStart = (river: point[], slice: number) => {
+  return river.slice(slice);
 };

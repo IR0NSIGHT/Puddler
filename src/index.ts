@@ -19,9 +19,9 @@ const startPoints: point[] = [];
 //}
 //
 ////debug pathing
-//startPoints.push({ x: 627, y: 1418 });
-//startPoints.push({ x: 637, y: 1499 });
-//startPoints.push({ x: 799, y: 400 });
+startPoints.push({ x: 627, y: 1418 });
+startPoints.push({ x: 637, y: 1499 });
+startPoints.push({ x: 799, y: 400 });
 startPoints.push({ x: 904, y: 286 });
 
 const rivers = startPoints.map((start) => {
@@ -47,7 +47,7 @@ const rivers = startPoints.map((start) => {
 });
 
 rivers
-  .map(capRiverStart)
+  .map(a => capRiverStart(a, 10))
   .filter((r) => r.length > 50)
   .forEach(applyRiverToTerrain);
 //collect puddles
