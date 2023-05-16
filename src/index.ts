@@ -3,13 +3,7 @@ import { log } from "./log";
 import { point } from "./point";
 import { collectPuddle, collectPuddleLayers } from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
-import {
-  floodToLevel,
-  getTerrainById,
-  getZ,
-  isWater,
-  markPos,
-} from "./terrain";
+import { floodToLevel, getZ, isWater } from "./terrain";
 
 const startPoints: point[] = [];
 //for (let x = 0; x < 10; x++) {
@@ -18,6 +12,16 @@ const startPoints: point[] = [];
 //  }
 //}
 //
+
+const getTime = (): number => {
+  //@ts-ignore
+  return java.lang.System.currentTimeMillis();
+};
+
+const startT = getTime();
+//diff t= 35649
+
+log("time start :" + startT);
 ////debug pathing
 startPoints.push({ x: 627, y: 1418 });
 startPoints.push({ x: 637, y: 1499 });
@@ -47,7 +51,10 @@ const rivers = startPoints.map((start) => {
 });
 
 rivers
-  .map(a => capRiverStart(a, 10))
+  .map((a) => capRiverStart(a, 10))
   .filter((r) => r.length > 50)
   .forEach(applyRiverToTerrain);
 //collect puddles
+
+log("end t = " + getTime());
+log("diff t= " + (getTime() - startT));
