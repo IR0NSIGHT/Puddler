@@ -6,8 +6,7 @@ import {
   getNeighbourPoints,
   parentedToList,
 } from "./point";
-import { collectPuddle } from "./puddle";
-import { floodToLevel, getZ, isWater, markPos } from "./terrain";
+import { getZ, isWater } from "./terrain";
 
 /**
  * start a new river path at this position

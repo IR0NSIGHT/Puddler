@@ -1,5 +1,6 @@
 import { queue, makeQueue } from "./PointQueue";
 import { makeSet, SeenSet } from "./SeenSet";
+import { pointToTileCoords } from "./Tile";
 import { log } from "./log";
 import {
   getNeighbourPoints,
@@ -38,15 +39,43 @@ export const collectPuddleLayers = (
   const seenSet = makeSet();
   const surfaceLayers: point[][] = [];
 
+  const tileSet = makeSet();
   for (let level = getZ(start, true); level <= maxLevel; level++) {
     if (nextLevelOpen.length == 0) break;
+    const remainingSurfaceBlocks = maxSurface - totalSurface;
+    const remainingSurfaceTiles = remainingSurfaceBlocks / (128 * 128);
 
-    const { surface, border: border } = collectSurfaceAndBorder(
+    //collect connected surface TILES at this level, see if they are to many
+    const tiles = collectSurfaceAndBorder(
+      nextLevelOpen.map(pointToTileCoords),
+      tileSet,
+      level,
+      remainingSurfaceTiles, //remaining surface
+      (p: point) => false,
+      (p: point) => dimension.getTile(p.x, p.y)?.getHighestIntHeight()
+    );
+    log(
+      "tested for tiles: " +
+        tiles.surface.length +
+        " surfaces from " +
+        remainingSurfaceTiles +
+        " remaining."
+    );
+    //failed early or exceeds remainingtiles
+    if (
+      remainingSurfaceTiles < tiles.surface.length ||
+      (tiles.surface.length == 0 && tiles.border.length == 0)
+    )
+      break;
+
+    //collect surface BLOCKS
+    const { surface, border } = collectSurfaceAndBorder(
       nextLevelOpen,
       seenSet,
       level,
       maxSurface - totalSurface, //remaining surface
-      (p: point) => false
+      (p: point) => false,
+      getZ
     );
     log(
       "collected layer: level=" +
@@ -76,18 +105,19 @@ export const collectPuddleLayers = (
   return surfaceLayers;
 };
 
-const collectSurfaceAndBorder = (
+export const collectSurfaceAndBorder = (
   openArr: point[],
   seenSet: SeenSet,
   level: number,
   maxSurface: number,
-  failEarly: (p: point) => boolean
+  failEarly: (p: point) => boolean,
+  getZ: (p: point) => number
 ): { surface: point[]; border: point[] } => {
   //use next level open that was collected before
   const surface: queue = makeQueue();
 
   const border: queue = makeQueue();
-  const isAtOrBelowSurfaceLevel = (p: point) => getZ(p, true) <= level;
+  const isAtOrBelowSurfaceLevel = (p: point) => getZ(p) <= level;
 
   //prepare open queue
   const open = makeQueue();
@@ -101,7 +131,13 @@ const collectSurfaceAndBorder = (
     const currentPoint = open.pop();
 
     if (i > maxSurface || failEarly(currentPoint)) {
-      log("fail early for: " + JSON.stringify(currentPoint));
+      log(
+        "fail early for: " +
+          JSON.stringify(currentPoint) +
+          " after " +
+          i +
+          " collected surfaces"
+      );
       return { surface: [], border: [] };
     }
 
@@ -124,83 +160,4 @@ const collectSurfaceAndBorder = (
     surface: surface.toArray(),
     border: border.toArray(), //todo: maybe return the blocks below surface too and let wrapper decide how to handle?
   };
-};
-
-/**
- * fill terrain with water at this position
- * dont do if puddle exceeds maxsurface at mindepth
- * @param pos
- */
-export const collectPuddle = (
-  pos: point,
-  maxPuddleSurface: number,
-  minPuddleDepth: number
-): point[] => {
-  //get point
-  const bottomLevel = getZ(pos, true);
-  log(
-    "collect puddle from " +
-      JSON.stringify(pos) +
-      " at bottomLevel=" +
-      bottomLevel
-  );
-
-  //get connected surface points at same level
-  const surface = collectSurfaceAt(
-    pos,
-    bottomLevel + minPuddleDepth,
-    maxPuddleSurface,
-    (p: point) => pointLowerThan(p, bottomLevel)
-  );
-  if (surface == undefined) return [];
-  if (!Array.isArray(surface)) {
-    log(
-      "puddle found escape: " +
-        JSON.stringify(surface) +
-        " at z=" +
-        getZ(surface)
-    );
-    return [];
-  }
-  //surface is closed surface at or above level
-  return surface;
-};
-
-/**
- *
- * @param pos
- * @param maxZ
- * @param maxSize
- * @param abortCondition
- * @returns array of surface points if success, single abort point that triggered onAbort condition
- */
-const collectSurfaceAt = (
-  pos: point,
-  maxZ: number,
-  maxSize: number,
-  abortCondition: (p: point) => boolean
-): point[] | undefined | point => {
-  const openPoints: queue = makeQueue();
-  const knownPoints = makeSet();
-  const closedPoints: point[] = [];
-
-  openPoints.push(pos);
-  knownPoints.add(pos);
-
-  let currentPoint: point;
-
-  while (!openPoints.isEmpty()) {
-    currentPoint = openPoints.pop();
-    closedPoints.push(currentPoint);
-    if (abortCondition(currentPoint)) return currentPoint;
-    if (closedPoints.length >= maxSize) return undefined;
-    getNeighbourPoints(currentPoint)
-      .filter((n) => !knownPoints.has(n))
-      .filter((n) => pointLowerThan(n, maxZ + 1))
-      .forEach((n) => {
-        knownPoints.add(n);
-        openPoints.push(n);
-      });
-  }
-  return closedPoints;
 };

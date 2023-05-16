@@ -1,16 +1,15 @@
 import { makeSet } from "./SeenSet";
-import {
-  timeJavaHashset,
-  timeJavaHashsetTupled,
-  timePointSet,
-} from "./TimeDebug";
+import { pointToTileCoords } from "./Tile";
 import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { point } from "./point";
-import { collectPuddle, collectPuddleLayers } from "./puddle";
+import {
+  collectPuddleLayers,
+  collectSurfaceAndBorder,
+} from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
-import { floodToLevel, getZ, isWater } from "./terrain";
+import { floodToLevel, getZ, isWater, markPos } from "./terrain";
 
 const startPoints: point[] = [];
 //for (let x = 0; x < 10; x++) {
@@ -29,6 +28,7 @@ startPoints.push({ x: 904, y: 286 });
 const t = timer();
 t.start();
 const allRiverPoints = makeSet();
+
 const rivers = startPoints.map((start) => {
   const riverPath = pathRiverFrom(start, allRiverPoints);
   if (riverPath.length > 0) {
@@ -56,6 +56,7 @@ const rivers = startPoints.map((start) => {
   return riverPath;
 });
 
+
 rivers
   .map((a) => capRiverStart(a, 10))
   .filter((r) => r.length > 50)
@@ -67,3 +68,40 @@ log("t=" + t.stop());
 //timePointSet();
 
 //t=50716
+
+const startPoint = { x: 1072, y: 188 };
+
+//collect connected surface TILES at this level, see if they are to many
+const tiles = collectSurfaceAndBorder(
+  [pointToTileCoords(startPoint)],
+  makeSet(),
+  70,
+  10, //remaining surface
+  (p: point) => false,
+  (p: point) => dimension.getTile(p.x, p.y)?.getHighestIntHeight()
+);
+
+log("found tiles:" + JSON.stringify(tiles));
+log(
+  "height at border: " +
+    JSON.stringify(
+      tiles.border.map((t) =>
+        dimension.getTile(t.x, t.y)?.getHighestIntHeight()
+      )
+    )
+);
+tiles.surface.forEach((t) => {
+  for (let x = t.x * 128; x < (t.x + 1) * 128; x++) {
+    for (let y = t.y * 128; y < (t.y + 1) * 128; y++) {
+      markPos({ x: x, y: y }, 37);
+    }
+  }
+});
+
+tiles.border.forEach((t) => {
+  for (let x = t.x * 128; x < (t.x + 1) * 128; x++) {
+    for (let y = t.y * 128; y < (t.y + 1) * 128; y++) {
+      markPos({ x: x, y: y }, 38);
+    }
+  }
+});
