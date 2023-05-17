@@ -3,7 +3,7 @@ const path = require("path");
 module.exports = {
   entry: ["./compiled/index.js"],
   devtool: false,
-  mode: "development",
+  mode: "production",
 
   //module: {
   //  rules: [
