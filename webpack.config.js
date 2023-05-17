@@ -1,21 +1,21 @@
 const path = require("path");
 
 module.exports = {
-  entry: ['@babel/polyfill',"./compiled/index.js"],
+  entry: ["./compiled/index.js"],
   devtool: false,
   mode: "development",
 
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader'
-        }
-      }
-    ]
-  },
+  //module: {
+  //  rules: [
+  //    {
+  //      test: /\.js$/,
+  //      exclude: /node_modules/,
+  //      use: {
+  //        loader: 'babel-loader'
+  //      }
+  //    }
+  //  ]
+  //},
 
   output: {
     filename: "Puddler.js",
