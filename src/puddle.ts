@@ -48,7 +48,7 @@ export const collectPuddleLayers = (
       nextLevelOpen,
       seenSet,
       level,
-      maxSurface - totalSurface, //remaining surface
+      maxSurface / maxLayers, //equally distributed by level, stop earlier
       (p: point) => false,
       getZ
     );
