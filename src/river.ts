@@ -5,6 +5,7 @@ import {
   parentedPoint,
   getNeighbourPoints,
   parentedToList,
+  pointInsideMap,
 } from "./point";
 import { getZ, isWater } from "./terrain";
 
@@ -51,7 +52,7 @@ function findClosestDrop(
   floor: boolean,
   blacklist?: parentedPoint[]
 ): parentedPoint[] {
-  log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor);
+  log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor + " inside map: " + pointInsideMap(pos));
   var seenSet: SeenSet = makeSet();
   if (blacklist !== undefined) blacklist.forEach((a) => seenSet.add(a.point));
 

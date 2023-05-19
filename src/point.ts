@@ -13,39 +13,51 @@ export function addPoints(a: point, b: point): point {
 export type point = { x: number; y: number };
 
 export function getNeighbourPoints(pos: point): point[] {
-  switch ((pos.x + pos.y) % 4) {
-    case 0:
-      return [
-        addPoints({ x: -1, y: 0 }, pos),
-        addPoints({ x: 1, y: 0 }, pos),
-        addPoints({ x: 0, y: -1 }, pos),
-        addPoints({ x: 0, y: 1 }, pos),
-      ];
-    case 1:
-      return [
-        addPoints({ x: 1, y: 0 }, pos),
-        addPoints({ x: 0, y: -1 }, pos),
-        addPoints({ x: 0, y: 1 }, pos),
-        addPoints({ x: -1, y: 0 }, pos),
-      ];
-    case 2:
-      return [
-        addPoints({ x: 0, y: -1 }, pos),
-        addPoints({ x: 0, y: 1 }, pos),
-        addPoints({ x: -1, y: 0 }, pos),
-        addPoints({ x: 1, y: 0 }, pos),
-      ];
-    case 3:
-      return [
-        addPoints({ x: 0, y: 1 }, pos),
-        addPoints({ x: -1, y: 0 }, pos),
-        addPoints({ x: 1, y: 0 }, pos),
-        addPoints({ x: 0, y: -1 }, pos),
-      ];
-    default:
-      throw new Error("impossible");
-  }
+  const neighs = () => {
+    switch (Math.abs(pos.x + pos.y) % 4) {
+      case 0:
+        return [
+          addPoints({ x: -1, y: 0 }, pos),
+          addPoints({ x: 1, y: 0 }, pos),
+          addPoints({ x: 0, y: -1 }, pos),
+          addPoints({ x: 0, y: 1 }, pos),
+        ];
+      case 1:
+        return [
+          addPoints({ x: 1, y: 0 }, pos),
+          addPoints({ x: 0, y: -1 }, pos),
+          addPoints({ x: 0, y: 1 }, pos),
+          addPoints({ x: -1, y: 0 }, pos),
+        ];
+      case 2:
+        return [
+          addPoints({ x: 0, y: -1 }, pos),
+          addPoints({ x: 0, y: 1 }, pos),
+          addPoints({ x: -1, y: 0 }, pos),
+          addPoints({ x: 1, y: 0 }, pos),
+        ];
+      case 3:
+        return [
+          addPoints({ x: 0, y: 1 }, pos),
+          addPoints({ x: -1, y: 0 }, pos),
+          addPoints({ x: 1, y: 0 }, pos),
+          addPoints({ x: 0, y: -1 }, pos),
+        ];
+      default:
+        throw new Error("impossible");
+    }
+  };
+  return neighs().filter(pointInsideMap);
 }
+
+export const pointInsideMap = (a: point) => {
+  return (
+    a.x >= 128 * dimension.getLowestX() &&
+    a.y >= 128 * dimension.getLowestY() &&
+    a.x <= 128 * dimension.getHighestX() &&
+    a.y <= 128 * dimension.getHighestY()
+  );
+};
 
 export const parentedToList = (
   endPoint: parentedPoint,

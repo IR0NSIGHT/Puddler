@@ -9,9 +9,9 @@ import { floodToLevel, getZ, isWater } from "./terrain";
 
 const main = () => {
   let startPoints: point[] = [];
-  for (let x = 0; x < 10; x++) {
-    for (let y = 0; y < 10; y++) {
-      startPoints.push({ x: x * 100, y: y * 100 });
+  for (let x = 0; x < 2000; x+= 50) {
+    for (let y = 0; y < 2000; y+= 50) {
+      startPoints.push({ x: x, y: y });
     }
   }
 
