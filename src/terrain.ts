@@ -5,6 +5,14 @@ export function getZ(pos: point, floor?: boolean): number {
   return floor ? Math.round(z) : z;
 }
 
+export const setWaterLevel = (p: point, z: number): void => {
+  dimension.setWaterLevelAt(p.x, p.y, Math.round(z));
+};
+
+export function setZ(pos: point, z: number): void {
+  dimension.setHeightAt(pos.x, pos.y, z);
+}
+
 export function getTerrainById(terrainId: number) {
   //@ts-ignore
   var terrain = org.pepsoft.worldpainter.Terrain.VALUES[terrainId];

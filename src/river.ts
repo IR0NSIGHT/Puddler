@@ -6,6 +6,7 @@ import {
   getNeighbourPoints,
   parentedToList,
   pointInsideMap,
+  pointsEqual,
 } from "./point";
 import { getZ, isWater } from "./terrain";
 
@@ -88,4 +89,25 @@ function findClosestDrop(
 
 export const capRiverStart = (river: point[], slice: number) => {
   return river.slice(slice);
+};
+
+/**
+ * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
+ * @param river point array that flows from high to low
+ * @returns river with z values
+ */
+export const minFilter = (
+  p: point,
+  i: number,
+  river: point[]
+): { point: point; z: number } => {
+  const nextLower = river[i == river.length - 1 ? river.length - 1 : i + 1];
+  const neiZs = getNeighbourPoints(p)
+    .filter((a) => !pointsEqual(a, nextLower))
+    .map((a) => getZ(a, true));
+  const minNeighbourNonRiver = Math.min.apply(Math, neiZs);
+  return {
+    point: p,
+    z: minNeighbourNonRiver,
+  };
 };
