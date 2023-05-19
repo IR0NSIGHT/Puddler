@@ -2,15 +2,18 @@ import { makeSet } from "./SeenSet";
 import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
-import { point } from "./point";
+import { mapDimensions, point } from "./point";
 import { collectPuddleLayers } from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
 import { floodToLevel, getZ, isWater } from "./terrain";
 
 const main = () => {
   let startPoints: point[] = [];
-  for (let x = 0; x < 2000; x+= 50) {
-    for (let y = 0; y < 2000; y+= 50) {
+  const dims = mapDimensions();
+  log("map dimension: " + JSON.stringify(dims))
+
+  for (let x = dims.start.x; x < dims.end.x; x+= 50) {
+    for (let y = dims.start.y; y < dims.end.y; y+= 50) {
       startPoints.push({ x: x, y: y });
     }
   }
@@ -59,11 +62,7 @@ const main = () => {
   //collect puddles
   log("t=" + t.stop());
 
-  //@ts-ignore
-  log("previous script testvar value: " + JSON.stringify(myTestVar));
-  let myTestVar;
-  myTestVar = "Hello World";
-  log("set testvar value");
+
 };
 
 main();

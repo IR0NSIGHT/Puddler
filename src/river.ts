@@ -14,7 +14,6 @@ import { getZ, isWater } from "./terrain";
  * @param pos
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
-  log("path downhill from:" + JSON.stringify(pos));
   var path: parentedPoint[] = [{ point: pos, parent: undefined }];
   var i = 0;
   var current = pos;
@@ -52,7 +51,6 @@ function findClosestDrop(
   floor: boolean,
   blacklist?: parentedPoint[]
 ): parentedPoint[] {
-  log("find closest drop from " + JSON.stringify(pos) + " floor: " + floor + " inside map: " + pointInsideMap(pos));
   var seenSet: SeenSet = makeSet();
   if (blacklist !== undefined) blacklist.forEach((a) => seenSet.add(a.point));
 

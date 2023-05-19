@@ -2,7 +2,7 @@ import { point } from "./point";
 
 export function getZ(pos: point, floor?: boolean): number {
   const z = dimension.getHeightAt(pos.x, pos.y);
-  return floor ? Math.floor(z) : z;
+  return floor ? Math.round(z) : z;
 }
 
 export function getTerrainById(terrainId: number) {

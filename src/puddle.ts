@@ -8,7 +8,7 @@ import {
   point,
   pointLowerThan,
 } from "./point";
-import { getZ } from "./terrain";
+import { getZ, markPos } from "./terrain";
 
 /**
  * collect the connected layers in the puddle, grouped by level
@@ -100,6 +100,7 @@ export const collectSurfaceAndBorder = (
           i +
           " collected surfaces"
       );
+      border.toArray().forEach(a => markPos(a,13));
       return { surface: [], border: [] };
     }
 
