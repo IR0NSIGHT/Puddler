@@ -28,8 +28,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       break;
     for (let point of pathToDrop) {
       if (isWater(point.point) || rivers.has(point.point)) {
-        if (rivers.has(point.point))
-        waterReached = true;
+        if (rivers.has(point.point)) waterReached = true;
         break;
       }
       path.push(point);
@@ -45,7 +44,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       " water reached: " +
       waterReached
   );
-  path.forEach(p =>rivers.add(p.point))
+  path.forEach((p) => rivers.add(p.point));
   return path.map((a) => a.point);
 };
 
@@ -109,10 +108,7 @@ export const minFilter = (
   i: number,
   river: point[]
 ): { point: point; z: number } => {
-  const nextLower = river[i == river.length - 1 ? river.length - 1 : i + 1];
-  const neiZs = getNeighbourPoints(p)
-    .filter((a) => !pointsEqual(a, nextLower))
-    .map((a) => getZ(a, true));
+  const neiZs = getNeighbourPoints(p).map((a) => getZ(a, true));
   const minNeighbourNonRiver = Math.min.apply(Math, neiZs);
   return {
     point: p,
