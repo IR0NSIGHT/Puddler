@@ -27,7 +27,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       //abort if closestDrop coulndt find anything
       break;
     for (let point of pathToDrop) {
-      if (isWater(point.point)) {
+      if (isWater(point.point) || rivers.has(point.point)) {
+        if (rivers.has(point.point))
         waterReached = true;
         break;
       }
@@ -44,6 +45,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       " water reached: " +
       waterReached
   );
+  path.forEach(p =>rivers.add(p.point))
   return path.map((a) => a.point);
 };
 
@@ -59,28 +61,18 @@ function findClosestDrop(
   floor: boolean
 ): parentedPoint[] {
   var seenSet: SeenSet = makeSet();
-  const seenArr: point[] = [];
 
   var queue: parentedPoint[] = [{ point: pos, parent: undefined }];
   let next: parentedPoint;
   var safetyIterator = 0;
   seenSet.add(pos);
-  seenArr.push(pos);
-  log(
-    "find closest drop from " +
-      JSON.stringify(pos) +
-      " z = " +
-      posZ +
-      " floor: " +
-      floor
-  );
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
 
     //abort condition
     if (getZ(next.point, floor) < posZ) {
       const path = parentedToList(next, []).reverse();
-      return path; //TODO return path to next
+      return path;
     }
 
     var neighbours = getNeighbourPoints(next.point);
@@ -90,31 +82,16 @@ function findClosestDrop(
       if (lower && unseen) {
         //unknown point
         seenSet.add(n);
-        seenArr.push(n);
-        queue.push({ point: n, parent: next }); //add to queue
+        queue.push({ point: n, parent: next });
       } else {
-        log(
-          "neighbour rejected: " +
-            JSON.stringify(withZ(n)) +
-            " lower: " +
-            lower +
-            " unseen: " +
-            unseen
-        );
       }
     });
     safetyIterator++;
   }
   if (!floor) {
     //try again with rounded numbers
-    log("try again with flooring");
     return findClosestDrop(pos, Math.round(posZ), true);
   }
-  //mark tested:
-  seenArr.forEach((p) => markPos(p, 38));
-
-  log("failed to find lower drop, return original " + JSON.stringify(pos));
-  log("seen arr: " + JSON.stringify(seenArr.map(withZ)));
   return [];
 }
 

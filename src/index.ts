@@ -12,17 +12,27 @@ const main = () => {
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  // for (let x = dims.start.x; x < dims.end.x; x += 50) {
-  //   for (let y = dims.start.y; y < dims.end.y; y += 50) {
-  //     startPoints.push({ x: x, y: y });
-  //   }
-  // }
+  for (let x = dims.start.x; x < dims.end.x; x += 50) {
+    for (let y = dims.start.y; y < dims.end.y; y += 50) {
+      startPoints.push({ x: x, y: y });
+    }
+  }
 
   ////debug pathing
 
-  startPoints.push({ x: 346, y: -3 });
-  startPoints.push({ x: 296, y: 41 });
+  // startPoints.push({ x: 346, y: -3 });
+  // startPoints.push({ x: 296, y: 41 });
+  //
+  // startPoints.push({ x: 97, y: -108 });
+  // startPoints.push({ x: 46, y: -109 });
+  // startPoints.push({ x: 47, y: -158 });
+  // startPoints.push({ x: 141, y: -154 });
 
+  //startPoints.push({ x: 1203, y: 798 });
+  //startPoints.push({ x: 1248, y: 797 });
+  //startPoints.push({ x: 1297, y: 798 });
+
+  //
   let t = timer();
   t.start();
   let allRiverPoints = makeSet();
@@ -32,20 +42,8 @@ const main = () => {
     if (riverPath.length > 0) {
       const riverEnd = riverPath[riverPath.length - 1];
       if (!isWater(riverEnd)) {
-        log(
-          "puddlify river, lenght = " +
-            riverPath.length +
-            "end at " +
-            JSON.stringify(riverEnd) +
-            " z=" +
-            getZ(riverEnd, true)
-        );
-        const myTimer = timer();
-        myTimer.start();
         const layers = collectPuddleLayers(riverEnd, 6, 5000);
         const bottomZ = getZ(riverEnd, true);
-        log("collection took " + myTimer.stop() + " millis");
-        log("flood puddle");
         layers.forEach((l: point[], idx: number) => {
           floodToLevel(l, bottomZ + layers.length - 1);
         });

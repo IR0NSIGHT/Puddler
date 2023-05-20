@@ -1,7 +1,6 @@
 import { queue, makeQueue } from "./PointQueue";
 import { makeSet, SeenSet } from "./SeenSet";
 import { pointToTileCoords } from "./Tile";
-import { log } from "./log";
 import {
   getNeighbourPoints,
   parentedToList,
@@ -23,14 +22,6 @@ export const collectPuddleLayers = (
 ): point[][] => {
   let level = getZ(start, true);
   const maxLevel = level + maxLayers;
-  log(
-    "collect puddle layers from " +
-      JSON.stringify(start) +
-      "from z=" +
-      level +
-      " to " +
-      maxLevel
-  );
 
   //iterators
   let nextLevelOpen = [start];
@@ -93,14 +84,6 @@ export const collectSurfaceAndBorder = (
     const currentPoint = open.pop();
 
     if (i > maxSurface || failEarly(currentPoint)) {
-      log(
-        "fail early for: " +
-          JSON.stringify(currentPoint) +
-          " after " +
-          i +
-          " collected surfaces"
-      );
-      border.toArray().forEach((a) => markPos(a, 13));
       return { surface: [], border: [] };
     }
 

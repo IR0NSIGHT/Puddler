@@ -29,7 +29,7 @@ export function markPos(pos: point, id: number) {
  * @returns
  */
 export function isWater(pos: point) {
-  var terrainZ = getZ(pos);
+  var terrainZ = getZ(pos, true);
 
   return terrainZ < dimension.getWaterLevelAt(pos.x, pos.y);
 }
