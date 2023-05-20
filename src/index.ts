@@ -10,19 +10,18 @@ import { floodToLevel, getZ, isWater } from "./terrain";
 const main = () => {
   let startPoints: point[] = [];
   const dims = mapDimensions();
-  log("map dimension: " + JSON.stringify(dims))
+  log("map dimension: " + JSON.stringify(dims));
 
-  for (let x = dims.start.x; x < dims.end.x; x+= 50) {
-    for (let y = dims.start.y; y < dims.end.y; y+= 50) {
-      startPoints.push({ x: x, y: y });
-    }
-  }
+  // for (let x = dims.start.x; x < dims.end.x; x += 50) {
+  //   for (let y = dims.start.y; y < dims.end.y; y += 50) {
+  //     startPoints.push({ x: x, y: y });
+  //   }
+  // }
 
   ////debug pathing
-  startPoints.push({ x: 627, y: 1418 });
-  startPoints.push({ x: 637, y: 1499 });
-  startPoints.push({ x: 799, y: 400 });
-  startPoints.push({ x: 904, y: 286 });
+
+  startPoints.push({ x: 346, y: -3 });
+  startPoints.push({ x: 296, y: 41 });
 
   let t = timer();
   t.start();
@@ -48,7 +47,7 @@ const main = () => {
         log("collection took " + myTimer.stop() + " millis");
         log("flood puddle");
         layers.forEach((l: point[], idx: number) => {
-          floodToLevel(l, bottomZ + layers.length - 2);
+          floodToLevel(l, bottomZ + layers.length - 1);
         });
       }
     }
@@ -61,8 +60,6 @@ const main = () => {
     .forEach(applyRiverToTerrain);
   //collect puddles
   log("t=" + t.stop());
-
-
 };
 
 main();

@@ -50,6 +50,12 @@ export function getNeighbourPoints(pos: point): point[] {
   return neighs().filter(pointInsideMap);
 }
 
+export const withZ = (p: point): point & { z: number } => ({
+  x: p.x,
+  y: p.y,
+  z: getZ(p, true),
+});
+
 export const mapDimensions = (): { start: point; end: point } => {
   return {
     start: { x: 128 * dimension.getLowestX(), y: 128 * dimension.getLowestY() },
