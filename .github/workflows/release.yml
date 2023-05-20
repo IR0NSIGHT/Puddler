@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Node.js and NPM
+        uses: actions/setup-node@v3
+        with:
+          node-version: "latest"
+
+      - name: "install dependencies"
+        run: npm ci
+
+      - name: full build and deploy
+        run: npm run deploy
+
+      - name: Get package version, write to .env file
+        run: echo "VERSION=$(node -p -e "require('./package.json').version")" >> "$GITHUB_ENV"
+
+      - name: Log version in js file
+        run: echo "//script.name=Puddler v${{ env.VERSION }} by IR0NSIGHT" | cat - dist/Puddler.js > temp && mv temp dist/Puddler.js
+
+      - name: Zip artifact
+        run: cd dist && zip -r Puddler_v${{ env.VERSION }}.zip . && cd ../..
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/Puddler_v${{ env.VERSION }}.zip
