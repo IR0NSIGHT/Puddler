@@ -50,7 +50,7 @@ export const collectPuddleLayers = (
       level,
       maxSurface, //equally distributed by level, stop earlier
       (p: point) => false,
-      getZ
+      (p: point) => getZ(p, true)
     );
 
     //stop if total surface would be exceeded
@@ -100,7 +100,7 @@ export const collectSurfaceAndBorder = (
           i +
           " collected surfaces"
       );
-      border.toArray().forEach(a => markPos(a,13));
+      border.toArray().forEach((a) => markPos(a, 13));
       return { surface: [], border: [] };
     }
 
