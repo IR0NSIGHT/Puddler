@@ -3,11 +3,14 @@ import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { mapDimensions, point } from "./point";
-import { collectPuddleLayers } from "./puddle";
+import { capRiverWithPond, collectPuddleLayers } from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
 import { floodToLevel, getZ, isWater } from "./terrain";
 
 const main = () => {
+  const { maxSurface, minDepth, minRiverLength } = params;
+
+  log("max surface = " + maxSurface);
   let startPoints: point[] = [];
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
@@ -39,25 +42,28 @@ const main = () => {
 
   let rivers = startPoints.map((start) => {
     const riverPath = pathRiverFrom(start, allRiverPoints);
-    if (riverPath.length > 0) {
-      const riverEnd = riverPath[riverPath.length - 1];
-      if (!isWater(riverEnd)) {
-        const layers = collectPuddleLayers(riverEnd, 6, 5000);
-        const bottomZ = getZ(riverEnd, true);
-        layers.forEach((l: point[], idx: number) => {
-          floodToLevel(l, bottomZ + layers.length - 1);
-        });
-      }
-    }
+    capRiverWithPond(riverPath, maxSurface, minDepth);
     return riverPath;
   });
 
-  rivers
+  rivers = rivers
     .map((a) => capRiverStart(a, 10))
-    .filter((r) => r.length > 50)
-    .forEach(applyRiverToTerrain);
+    .filter((r) => r.length > minRiverLength);
+
+  rivers.forEach(applyRiverToTerrain);
+
+  let totalLength = 0;
+  rivers.forEach((r) => (totalLength += r.length));
   //collect puddles
-  log("t=" + t.stop());
+  log(
+    "script too =" +
+      t.stop() / 1000 +
+      " seconds for " +
+      rivers.length +
+      " rivers.\nGenerated " +
+      totalLength +
+      " meters of river."
+  );
 };
 
 main();

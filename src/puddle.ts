@@ -7,7 +7,21 @@ import {
   point,
   pointLowerThan,
 } from "./point";
-import { getZ, markPos } from "./terrain";
+import { floodToLevel, getZ, isWater, markPos } from "./terrain";
+
+export const capRiverWithPond = (river : point[], maxSurface: number, minDepth: number)  => {
+  if (river.length > 0) {
+    const riverEnd = river[river.length - 1];
+    if (!isWater(riverEnd)) {
+      const layers = collectPuddleLayers(riverEnd, 6, maxSurface);
+      if (layers.length < minDepth) return;
+      const bottomZ = getZ(riverEnd, true);
+      layers.forEach((l: point[], idx: number) => {
+        floodToLevel(l, bottomZ + layers.length - 1);
+      });
+    }
+  }
+}
 
 /**
  * collect the connected layers in the puddle, grouped by level

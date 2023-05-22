@@ -1,6 +1,16 @@
 // script.description= create natural creeks and ponds
 
-//script.param.level.type=integer
-//script.param.level.description=Lake Surface
-//script.param.level.optional=false
-//script.param.level.default=50
+//script.param.maxSurface.type=integer
+//script.param.maxSurface.description=maximum surface area of ponds
+//script.param.maxSurface.optional=false
+//script.param.maxSurface.default=500
+
+//script.param.minDepth.type=integer
+//script.param.minDepth.description=minimal depth of ponds
+//script.param.minDepth.optional=false
+//script.param.minDepth.default=2
+
+//script.param.minRiverLength.type=integer
+//script.param.minRiverLength.description=minimal length of river
+//script.param.minRiverLength.optional=false
+//script.param.minRiverLength.default=50

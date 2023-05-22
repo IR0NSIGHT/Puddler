@@ -1,4 +1,8 @@
 declare const wp: any;
 declare const dimension: any;
 
-declare const params: any;
+declare const params: {
+  maxSurface: number;
+  minDepth: number;
+  minRiverLength: number;
+};
