@@ -14,3 +14,8 @@
 //script.param.minRiverLength.description=minimal length of river
 //script.param.minRiverLength.optional=false
 //script.param.minRiverLength.default=50
+
+//script.param.blocksPerRiver.type=integer
+//script.param.blocksPerRiver.description=one river every x blocks
+//script.param.blocksPerRiver.optional=false
+//script.param.blocksPerRiver.default=100

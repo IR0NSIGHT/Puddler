@@ -8,34 +8,19 @@ import { capRiverStart, pathRiverFrom } from "./river";
 import { floodToLevel, getZ, isWater } from "./terrain";
 
 const main = () => {
-  const { maxSurface, minDepth, minRiverLength } = params;
+  const { maxSurface, minDepth, minRiverLength, blocksPerRiver } = params;
 
   log("max surface = " + maxSurface);
   let startPoints: point[] = [];
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  for (let x = dims.start.x; x < dims.end.x; x += 50) {
-    for (let y = dims.start.y; y < dims.end.y; y += 50) {
+  for (let x = dims.start.x; x < dims.end.x; x += blocksPerRiver) {
+    for (let y = dims.start.y; y < dims.end.y; y += blocksPerRiver) {
       startPoints.push({ x: x, y: y });
     }
   }
 
-  ////debug pathing
-
-  // startPoints.push({ x: 346, y: -3 });
-  // startPoints.push({ x: 296, y: 41 });
-  //
-  // startPoints.push({ x: 97, y: -108 });
-  // startPoints.push({ x: 46, y: -109 });
-  // startPoints.push({ x: 47, y: -158 });
-  // startPoints.push({ x: 141, y: -154 });
-
-  //startPoints.push({ x: 1203, y: 798 });
-  //startPoints.push({ x: 1248, y: 797 });
-  //startPoints.push({ x: 1297, y: 798 });
-
-  //
   let t = timer();
   t.start();
   let allRiverPoints = makeSet();
