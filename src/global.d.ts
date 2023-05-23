@@ -6,4 +6,7 @@ declare const params: {
   minDepth: number;
   minRiverLength: number;
   blocksPerRiver: number;
+  mustEndInPuddle: boolean;
+  makePuddles: boolean;
+  makeRivers: boolean;
 };

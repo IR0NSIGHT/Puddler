@@ -19,3 +19,18 @@
 //script.param.blocksPerRiver.description=one river every x blocks
 //script.param.blocksPerRiver.optional=false
 //script.param.blocksPerRiver.default=100
+
+//script.param.mustEndInPuddle.type=boolean
+//script.param.mustEndInPuddle.description=river must end in puddle or existing water. NOT YET IMPLEMENTED
+//script.param.mustEndInPuddle.optional=false
+//script.param.mustEndInPuddle.default=true
+
+//script.param.makePuddles.type=boolean
+//script.param.makePuddles.description=generate puddles on map.
+//script.param.makePuddles.optional=false
+//script.param.makePuddles.default=true
+
+//script.param.makeRivers.type=boolean
+//script.param.makeRivers.description=generate rivers on map.
+//script.param.makeRivers.optional=false
+//script.param.makeRivers.default=true
