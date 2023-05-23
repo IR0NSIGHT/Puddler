@@ -3,9 +3,8 @@ import { timer } from "./Timer";
 import { applyRiverToTerrain } from "./applyRiver";
 import { log } from "./log";
 import { mapDimensions, point } from "./point";
-import { capRiverWithPond, collectPuddleLayers } from "./puddle";
+import { capRiverWithPond } from "./puddle";
 import { capRiverStart, pathRiverFrom } from "./river";
-import { floodToLevel, getZ, isWater } from "./terrain";
 
 const main = () => {
   const { maxSurface, minDepth, minRiverLength, blocksPerRiver } = params;
@@ -15,17 +14,38 @@ const main = () => {
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  for (let x = dims.start.x; x < dims.end.x; x += blocksPerRiver) {
-    for (let y = dims.start.y; y < dims.end.y; y += blocksPerRiver) {
-      startPoints.push({ x: x, y: y });
+  //@ts-ignore
+  const annotations = org.pepsoft.worldpainter.layers.Annotations.INSTANCE;
+  const isCyanAnnotated = (p: point): boolean => {
+    return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
+  };
+
+  for (let x = dims.start.x; x < dims.end.x; x++) {
+    for (let y = dims.start.y; y < dims.end.y; y++) {
+      const point = { x: x, y: y };
+      if (isCyanAnnotated(point)) {
+        startPoints.push(point);
+      }
     }
   }
+
+  const passRandom = (p: point, chance: number): boolean => {
+    const seed = p.x * p.y + p.x;
+    //@ts-ignore
+    const randGen: any = new java.util.Random(seed);
+    const rPoint = randGen.nextFloat();
+    log("test rPoint=" + rPoint + " < chance " + chance);
+    return rPoint < chance;
+  };
+
+  //TODO user option (checkbox) to remove annotation from used points
 
   let t = timer();
   t.start();
   let allRiverPoints = makeSet();
-
-  let rivers = startPoints.map((start) => {
+  log("total possible starts: " + startPoints.length);
+  const filter = (p: point) => passRandom(p, 1 / blocksPerRiver);
+  let rivers = startPoints.filter(filter).map((start) => {
     const riverPath = pathRiverFrom(start, allRiverPoints);
     capRiverWithPond(riverPath, maxSurface, minDepth);
     return riverPath;
