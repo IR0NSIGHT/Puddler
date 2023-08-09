@@ -9,4 +9,7 @@ declare const params: {
   mustEndInPuddle: boolean;
   makePuddles: boolean;
   makeRivers: boolean;
+  exportRiverToAnnotation: number;
+  exportRiverWaterDepth: number;
+  exportRiverTerrainDepth: number;
 };

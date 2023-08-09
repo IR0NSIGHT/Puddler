@@ -1,10 +1,10 @@
-import { makeSet } from "./SeenSet";
-import { timer } from "./Timer";
+import {makeSet} from "./SeenSet";
+import {timer} from "./Timer";
 import {applyRiverToTerrain, exportTarget} from "./applyRiver";
-import { log } from "./log";
-import { mapDimensions, point } from "./point";
-import { capRiverWithPond } from "./puddle";
-import { capRiverStart, pathRiverFrom } from "./river";
+import {log} from "./log";
+import {mapDimensions, point} from "./point";
+import {capRiverWithPond} from "./puddle";
+import {capRiverStart, pathRiverFrom} from "./river";
 
 const main = () => {
   const {
@@ -15,6 +15,7 @@ const main = () => {
     makePuddles: makePuddle,
     makeRivers,
     mustEndInPuddle,
+    exportRiverToAnnotation: number,
   } = params;
 
   if (!makePuddle && !makeRivers) {
@@ -67,14 +68,16 @@ const main = () => {
   }
 
   rivers = rivers
-    .map((a) => capRiverStart(a, 10))
-    .filter((r) => r.length > minRiverLength);
+      .map((a) => capRiverStart(a, 10))
+      .filter((r) => r.length > minRiverLength);
 
   const exportTarget: exportTarget = {
-    annotationColor: 10, //Purple
-    terrainDepth: 1,
-    waterlevel: 0,
+    annotationColor: (params.exportRiverToAnnotation == -1) ? undefined : params.exportRiverToAnnotation,
+    terrainDepth: (params.exportRiverTerrainDepth == -1) ? undefined : -params.exportRiverTerrainDepth,
+    waterlevel: (params.exportRiverWaterDepth == -1) ? undefined : -params.exportRiverWaterDepth,
   }
+  log("params = " + params);
+  log("export target: " + JSON.stringify(exportTarget));
 
   if (makeRivers) rivers.forEach(r => applyRiverToTerrain(r, exportTarget));
 
@@ -82,7 +85,7 @@ const main = () => {
   rivers.forEach((r) => (totalLength += r.length));
   //collect puddles
   log(
-    "script too =" +
+      "script too =" +
       t.stop() / 1000 +
       " seconds for " +
       rivers.length +
