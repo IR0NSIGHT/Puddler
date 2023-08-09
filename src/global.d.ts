@@ -6,10 +6,11 @@ declare const params: {
   minDepth: number;
   minRiverLength: number;
   blocksPerRiver: number;
-  mustEndInPuddle: boolean;
-  makePuddles: boolean;
-  makeRivers: boolean;
+  floodPuddles: boolean;
+  applyRivers: boolean;
   exportRiverToAnnotation: number;
   exportRiverWaterDepth: number;
   exportRiverTerrainDepth: number;
+
+  exportPuddleToAnnotation: number;
 };

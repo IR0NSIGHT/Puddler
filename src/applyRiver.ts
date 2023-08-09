@@ -2,22 +2,23 @@ import {point} from "./point";
 import {minFilter} from "./river";
 import {isWater, setWaterLevel, setZ} from "./terrain";
 
-export type exportTarget = {
+export type RiverExportTarget = {
     waterlevel: number|undefined,
     terrainDepth: number|undefined,
-    annotationColor: AnnotationLayer|undefined
+    annotationColor: AnnotationLayer|undefined,
+    applyRivers: boolean
 }
 
 type AnnotationLayer = number;
-export const applyRiverToTerrain = (river: point[], target: exportTarget): void => {
+export const applyRiverToTerrain = (river: point[], target: RiverExportTarget): void => {
     river
         .filter((a) => !isWater(a))
         .map(minFilter)
         .forEach((a) => {
-            if (target.terrainDepth !== undefined)
+            if (target.terrainDepth !== undefined && target.applyRivers)
                 setZ(a.point, a.z - target.terrainDepth)
 
-            if (target.waterlevel !== undefined)
+            if (target.waterlevel !== undefined && target.applyRivers)
                 setWaterLevel(a.point, a.z - target.waterlevel)
 
             if (target.annotationColor !== undefined)

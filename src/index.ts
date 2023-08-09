@@ -1,9 +1,9 @@
 import {makeSet} from "./SeenSet";
 import {timer} from "./Timer";
-import {applyRiverToTerrain, exportTarget} from "./applyRiver";
+import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {capRiverWithPond} from "./puddle";
+import {capRiverWithPond, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./river";
 
 const main = () => {
@@ -12,14 +12,16 @@ const main = () => {
     minDepth,
     minRiverLength,
     blocksPerRiver,
-    makePuddles: makePuddle,
-    makeRivers,
-    mustEndInPuddle,
-    exportRiverToAnnotation: number,
+    floodPuddles,
+    applyRivers,
+    exportRiverToAnnotation,
+    exportRiverWaterDepth,
+    exportRiverTerrainDepth,
+    exportPuddleToAnnotation
   } = params;
 
-  if (!makePuddle && !makeRivers) {
-    log("ERROR: must make puddle and/or river for script to have any effect.");
+  if (!floodPuddles && !applyRivers && exportRiverToAnnotation < 0 && exportPuddleToAnnotation < 0) {
+    log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
     return;
   }
 
@@ -61,26 +63,30 @@ const main = () => {
     return pathRiverFrom(start, allRiverPoints);
   });
 
-  if (makePuddle) {
-    rivers.forEach((riverPath) => {
-      capRiverWithPond(riverPath, maxSurface, minDepth);
-    });
+  const exportTargetPuddle: PuddleExportTarget = {
+    annotationColor: (params.exportPuddleToAnnotation < 0) ? undefined : params.exportPuddleToAnnotation,
+    flood: floodPuddles,
   }
-
-  rivers = rivers
-      .map((a) => capRiverStart(a, 10))
-      .filter((r) => r.length > minRiverLength);
-
-  const exportTarget: exportTarget = {
+  const exportTargetRiver: RiverExportTarget = {
     annotationColor: (params.exportRiverToAnnotation < 0) ? undefined : params.exportRiverToAnnotation,
     terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : -params.exportRiverTerrainDepth,
     waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : -params.exportRiverWaterDepth,
+    applyRivers: applyRivers
   }
 
-  if (makeRivers) rivers.forEach(r => applyRiverToTerrain(r, exportTarget));
+  const longRivers = rivers
+      .map((a) => capRiverStart(a, 10))
+      .filter((r) => r.length > minRiverLength);
+
+  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
+
+  log("export target puddle: " + exportTargetPuddle);
+  rivers.forEach((riverPath) => {
+    capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
+  });
 
   let totalLength = 0;
-  rivers.forEach((r) => (totalLength += r.length));
+  longRivers.forEach((r) => (totalLength += r.length));
   //collect puddles
   log(
       "script too =" +

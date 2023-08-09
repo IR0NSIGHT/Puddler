@@ -20,25 +20,28 @@
 //script.param.blocksPerRiver.optional=false
 //script.param.blocksPerRiver.default=100
 
-//script.param.mustEndInPuddle.type=boolean
-//script.param.mustEndInPuddle.description=river must end in puddle or existing water. NOT YET IMPLEMENTED
-//script.param.mustEndInPuddle.optional=false
-//script.param.mustEndInPuddle.default=true
 
-//script.param.makePuddles.type=boolean
-//script.param.makePuddles.description=generate puddles on map.
-//script.param.makePuddles.optional=false
-//script.param.makePuddles.default=true
+//script.param.floodPuddles.type=boolean
+//script.param.floodPuddles.description=generate puddles on map.
+//script.param.floodPuddles.optional=false
+//script.param.floodPuddles.default=true
 
-//script.param.makeRivers.type=boolean
-//script.param.makeRivers.description=generate rivers on map.
-//script.param.makeRivers.optional=false
-//script.param.makeRivers.default=true
+//script.param.applyRivers.type=boolean
+//script.param.applyRivers.description=generate rivers on map.
+//script.param.applyRivers.optional=false
+//script.param.applyRivers.default=true
 
 //script.param.exportRiverToAnnotation.type=integer
-//script.param.exportRiverToAnnotation.description=Annotation color to export rivers to. -1 to disable. 10: purple
+//script.param.exportRiverToAnnotation.description=Annotation color to export rivers to. -1 to disable.
 //script.param.exportRiverToAnnotation.optional=false
 //script.param.exportRiverToAnnotation.default=-1
+
+//script.param.exportPuddleToAnnotation.type=integer
+//script.param.exportPuddleToAnnotation.description=Annotation color to export puddles to. -1 to disable.
+//script.param.exportPuddleToAnnotation.optional=false
+//script.param.exportPuddleToAnnotation.default=-1
+
+
 
 //script.param.exportRiverWaterDepth.type=integer
 //script.param.exportRiverWaterDepth.description=Depth below original terrain level to export waterlevel to. -1 to disable.
