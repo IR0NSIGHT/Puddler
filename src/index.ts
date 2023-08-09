@@ -76,8 +76,6 @@ const main = () => {
     terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : -params.exportRiverTerrainDepth,
     waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : -params.exportRiverWaterDepth,
   }
-  log("params = " + params);
-  log("export target: " + JSON.stringify(exportTarget));
 
   if (makeRivers) rivers.forEach(r => applyRiverToTerrain(r, exportTarget));
 
