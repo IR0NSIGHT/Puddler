@@ -72,9 +72,9 @@ const main = () => {
       .filter((r) => r.length > minRiverLength);
 
   const exportTarget: exportTarget = {
-    annotationColor: (params.exportRiverToAnnotation == -1) ? undefined : params.exportRiverToAnnotation,
-    terrainDepth: (params.exportRiverTerrainDepth == -1) ? undefined : -params.exportRiverTerrainDepth,
-    waterlevel: (params.exportRiverWaterDepth == -1) ? undefined : -params.exportRiverWaterDepth,
+    annotationColor: (params.exportRiverToAnnotation < 0) ? undefined : params.exportRiverToAnnotation,
+    terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : -params.exportRiverTerrainDepth,
+    waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : -params.exportRiverWaterDepth,
   }
   log("params = " + params);
   log("export target: " + JSON.stringify(exportTarget));
