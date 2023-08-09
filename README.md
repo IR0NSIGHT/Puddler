@@ -7,6 +7,9 @@ github: https://github.com/IR0NSIGHT/Puddler
 
 ![example map](example_birdseye.png)
 
+![example exported](example_exported.png)
+(image by Dannypan from the worldpainter discord)
+
 # How to use
 
 download the puddler.js file from the release tab  on the right or the link above
