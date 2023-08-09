@@ -69,8 +69,8 @@ const main = () => {
   }
   const exportTargetRiver: RiverExportTarget = {
     annotationColor: (params.exportRiverToAnnotation < 0) ? undefined : params.exportRiverToAnnotation,
-    terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : -params.exportRiverTerrainDepth,
-    waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : -params.exportRiverWaterDepth,
+    terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : params.exportRiverTerrainDepth,
+    waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : params.exportRiverWaterDepth,
     applyRivers: applyRivers
   }
 
@@ -78,9 +78,10 @@ const main = () => {
       .map((a) => capRiverStart(a, 10))
       .filter((r) => r.length > minRiverLength);
 
+  log("export target river: " + JSON.stringify(exportTargetRiver));
   longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
 
-  log("export target puddle: " + exportTargetPuddle);
+  log("export target puddle: " + JSON.stringify(exportTargetPuddle));
   rivers.forEach((riverPath) => {
     capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
   });
