@@ -1,15 +1,13 @@
-import { queue, makeQueue } from "./PointQueue";
-import { makeSet, SeenSet } from "./SeenSet";
-import { pointToTileCoords } from "./Tile";
-import {
-  getNeighbourPoints,
-  parentedToList,
-  point,
-  pointLowerThan,
-} from "./point";
-import { floodToLevel, getZ, isWater, markPos } from "./terrain";
+import {makeQueue, queue} from "./PointQueue";
+import {makeSet, SeenSet} from "./SeenSet";
+import {getNeighbourPoints, point,} from "./point";
+import {floodToLevel, getZ, isWater} from "./terrain";
 
-export const capRiverWithPond = (river : point[], maxSurface: number, minDepth: number)  => {
+export type PuddleExportTarget = {
+  flood: boolean,
+  annotationColor: number|undefined
+}
+export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: number, target: PuddleExportTarget) => {
   if (river.length > 0) {
     const riverEnd = river[river.length - 1];
     if (!isWater(riverEnd)) {
@@ -17,7 +15,14 @@ export const capRiverWithPond = (river : point[], maxSurface: number, minDepth: 
       if (layers.length < minDepth) return;
       const bottomZ = getZ(riverEnd, true);
       layers.forEach((l: point[], idx: number) => {
-        floodToLevel(l, bottomZ + layers.length - 1);
+        if (target.flood)
+          floodToLevel(l, bottomZ + layers.length - 1);
+
+        if (target.annotationColor !== undefined) {
+          l.forEach((p: point) => {
+            dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, target.annotationColor);
+          });
+        }
       });
     }
   }
