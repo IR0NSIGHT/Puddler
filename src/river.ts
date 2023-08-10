@@ -73,7 +73,18 @@ function findClosestDrop(
       return path;
     }
 
-    const neighbours = getNeighbourPoints(next.point).filter(seenSet.hasNot);
+    let neighbours = getNeighbourPoints(next.point).filter(seenSet.hasNot);
+    const trueLowerNeighbours = neighbours.filter(n => getZ(n, true) < Math.round(posZ));
+    if (trueLowerNeighbours.length == 0) {
+        //no lower neighbour, river is in flat area => sort by tinyest height difference
+        neighbours = neighbours.sort((a, b) => {
+            const aZ = getZ(a, false);
+            const bZ = getZ(b, false);
+            return aZ-bZ;
+        });
+        markPos(next.point, 3)
+    }
+
     neighbours.forEach(function (n) {
       const lower = getZ(n, false) <= posZ;
       if (lower) {
