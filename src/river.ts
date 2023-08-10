@@ -94,7 +94,8 @@ export function findClosestDrop(
             const bZ = getZ(b, false);
             return aZ-bZ;
         });
-        markPos(next.point, 3)
+
+     //   markPos(next.point, 3)
     }
 
     neighbours.forEach(function (n) {
