@@ -22,7 +22,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   let waterReached = false;
   while (i < 1000) {
     i++;
-    const pathToDrop = findClosestDrop(current, getZ(current), false);
+    const pathToDrop = findClosestDrop(current, getZ(current));
     if (pathToDrop.length == 0)
       //abort if closestDrop coulndt find anything
       break;
@@ -57,7 +57,6 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
 function findClosestDrop(
   pos: point,
   posZ: number,
-  floor: boolean
 ): parentedPoint[] {
   var seenSet: SeenSet = makeSet();
 
@@ -69,16 +68,15 @@ function findClosestDrop(
     next = queue.shift() as parentedPoint;
 
     //abort condition
-    if (getZ(next.point, floor) < posZ) {
+    if (getZ(next.point, true) < Math.round(posZ)) {
       const path = parentedToList(next, []).reverse();
       return path;
     }
 
-    var neighbours = getNeighbourPoints(next.point);
+    const neighbours = getNeighbourPoints(next.point).filter(seenSet.hasNot);
     neighbours.forEach(function (n) {
-      const lower = getZ(n, floor) <= posZ;
-      const unseen = !seenSet.has(n);
-      if (lower && unseen) {
+      const lower = getZ(n, false) <= posZ;
+      if (lower) {
         //unknown point
         seenSet.add(n);
         queue.push({ point: n, parent: next });
@@ -86,10 +84,6 @@ function findClosestDrop(
       }
     });
     safetyIterator++;
-  }
-  if (!floor) {
-    //try again with rounded numbers
-    return findClosestDrop(pos, Math.round(posZ), true);
   }
   return [];
 }
