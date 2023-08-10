@@ -5,9 +5,6 @@ import {
   parentedPoint,
   getNeighbourPoints,
   parentedToList,
-  pointInsideMap,
-  pointsEqual,
-  withZ,
 } from "./point";
 import { getZ, isWater, markPos } from "./terrain";
 
@@ -16,9 +13,9 @@ import { getZ, isWater, markPos } from "./terrain";
  * @param pos
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
-  var path: parentedPoint[] = [{ point: pos, parent: undefined }];
-  var i = 0;
-  var current = pos;
+  const path: parentedPoint[] = [{ point: pos, parent: undefined, distance: 0 }];
+  let i = 0;
+  let current = pos;
   let waterReached = false;
   while (i < 1000) {
     i++;
@@ -48,21 +45,36 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   return path.map((a) => a.point);
 };
 
+
+export const squaredDistanceBetweenPoints = (a: point, b: point) => {
+    const diff = {x: a.x-b.x, y: a.y-b.y};
+    return diff.x*diff.x + diff.y*diff.y;
+}
+
+export const insertInSortedQueue = (sortedQueue: parentedPoint[], point: parentedPoint): void => {
+    let i = 0;
+    for (let iteratorPoint of sortedQueue) {
+          if (iteratorPoint.distance > point.distance) break;
+          i++;
+    }
+    sortedQueue.splice(i, 0, point);
+}
+
 /**
  * find the point closest to pos thats at least one block lower
  * @param pos
  * @param posZ
  * @returns path to this point from pos where pos is the first entry, drop the last
  */
-function findClosestDrop(
+export function findClosestDrop(
   pos: point,
   posZ: number,
 ): parentedPoint[] {
-  var seenSet: SeenSet = makeSet();
+  const seenSet: SeenSet = makeSet();
 
-  var queue: parentedPoint[] = [{ point: pos, parent: undefined }];
+  const queue: parentedPoint[] = [{ point: pos, parent: undefined, distance: 0 }];
   let next: parentedPoint;
-  var safetyIterator = 0;
+  let safetyIterator = 0;
   seenSet.add(pos);
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
@@ -90,7 +102,7 @@ function findClosestDrop(
       if (lower) {
         //unknown point
         seenSet.add(n);
-        queue.push({ point: n, parent: next });
+        insertInSortedQueue(queue, { point: n, parent: next, distance: squaredDistanceBetweenPoints(n, pos) });
       } else {
       }
     });

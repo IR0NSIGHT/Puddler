@@ -4,7 +4,7 @@ export const pointsEqual = (a: point, b: point) => {
   return a.x == b.x && a.y == b.y;
 };
 
-export type parentedPoint = { point: point; parent: parentedPoint | undefined };
+export type parentedPoint = { point: point; parent: parentedPoint | undefined , distance: number};
 
 export function addPoints(a: point, b: point): point {
   return { x: a.x + b.x, y: a.y + b.y };
