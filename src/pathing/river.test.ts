@@ -33,6 +33,7 @@ describe('helper function river path', () => {
         const pointB = {x: 10, y: 10};
         const pointC = {x: 20, y: -10};
 
+        expect(averagePoint([pointA])).toEqual(pointA);
         const avg = averagePoint([pointA, pointB]);
         expect(avg).toEqual({x: 5, y: 5});
         const avg1 = averagePoint([pointA, pointB, pointC]);
