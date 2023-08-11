@@ -27,24 +27,17 @@ export const applyPuddleToMap = (puddleSurface: point[], waterLevel: number, tar
 
 /**
  *
- * @param river
+ * @param startPos starting positions for search. index zero will be considered bottom height of pond. should all be same height
  * @param maxSurface
- * @param minDepth
- * @param target
  * @returns true if river is finishing in pond or existing waterbody
  */
-export const findPondOutflow = (river: point[], maxSurface: number, minDepth: number): {
+export const findPondOutflow = (startPos: point[], maxSurface: number): {
   pondSurface: point[],
   waterLevel: number,
   depth: number,
   escapePoint: point | undefined
 } => {
-  const riverEnd = river[river.length - 1];
-  //if (isWater(riverEnd)) {
-  //  return true;
-  //}
-
-  const {layers, seenSet, totalSurface, escapePoint} = collectPuddleLayers([riverEnd], 15, maxSurface);
+  const {layers, seenSet, totalSurface, escapePoint} = collectPuddleLayers(startPos, 15, maxSurface);
 
   if (escapePoint !== undefined) {
     markPos(escapePoint, 13);
@@ -54,7 +47,7 @@ export const findPondOutflow = (river: point[], maxSurface: number, minDepth: nu
   layers.forEach((layer) => surfacePoints.push(...layer));
   return {
     pondSurface: surfacePoints,
-    waterLevel: getZ(riverEnd, true) + layers.length,
+    waterLevel: getZ(startPos[0], true) + layers.length,
     depth: layers.length,
     escapePoint: escapePoint
   };

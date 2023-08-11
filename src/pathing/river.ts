@@ -2,7 +2,7 @@ import {makeSet, SeenSet} from "../SeenSet";
 import {log} from "../log";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
 import {getZ, isWater} from "../terrain";
-import {annotateAll} from "../puddle";
+import {findPondOutflow} from "../puddle";
 
 const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -22,41 +22,45 @@ const testIfDownhill = (path: point[]) => {
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   const path: parentedPoint[] = [{point: pos, parent: undefined, distance: 0}];
-  let i = 0;
+  let safetyIt = 0;
   let current = pos;
-  let waterReached = false;
-  while (i < 1000) {
-    i++;
+  let riverMerged = false;
+  while (safetyIt < 1000) {
+    safetyIt++;
     const pathToDrop = findClosestDrop([current], getZ(current));
-    if (pathToDrop.length == 0)
+
+    if (pathToDrop.length == 0) {
       //abort if closestDrop coulndt find anything
+    //  const pond = findPondOutflow(riverPath, maxSurface)
       break;
+    }
+
+
+    //add found path to riverpoint list, until water/river is reached
     for (let point of pathToDrop) {
-      if (isWater(point.point) || rivers.has(point.point)) {
-        if (rivers.has(point.point)) waterReached = true;
+      if (rivers.has(point.point)) {
+        riverMerged = true;
+        break;
+      }
+
+      if (isWater(point.point)) {
         break;
       }
       path.push(point);
       // rivers.add(point.point);
     }
-    if (waterReached) break;
+    if (riverMerged) break;
     //end of path is droppoint
     current = pathToDrop[pathToDrop.length - 1].point;
   }
   log(
-    "river stopped at " +
+      "river stopped at " +
       JSON.stringify(path[path.length - 1].point) +
-      " water reached: " +
-      waterReached
+      " river merged: " +
+      riverMerged
   );
   path.forEach((p) => rivers.add(p.point));
-  const pathPoints =path.map((a) => a.point);
-  if (testIfDownhill(pathPoints))
-    return pathPoints;
-  else {
-    annotateAll(pathPoints, 12);
-    return []
-  }
+  return path.map((a) => a.point);
 };
 
 

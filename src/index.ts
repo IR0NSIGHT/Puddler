@@ -91,7 +91,7 @@ const main = () => {
         riverPath.forEach((p) => annotateAll([p], Math.max(1,Math.min(15,getZ(p, true) - 62))))
         //markPos(riverPath[0], 2)
         //markPos(riverPath[riverPath.length-1], 3)
-        const pond = findPondOutflow(riverPath, maxSurface, minDepth);
+        const pond = findPondOutflow([riverPath[riverPath.length-1]], maxSurface);
         applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle);
 
       });
