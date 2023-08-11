@@ -1,7 +1,7 @@
 import {makeQueue, queue} from "./PointQueue";
 import {makeSet, SeenSet} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
-import {floodToLevel, getZ, isWater} from "./terrain";
+import {floodToLevel, getZ, markPos} from "./terrain";
 import {log} from "./log";
 
 export type PuddleExportTarget = {
@@ -34,7 +34,7 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
   //}
 
 
-  const {layers, seenSet, totalSurface} = collectPuddleLayers(riverEnd, 15, maxSurface);
+  const {layers, seenSet, totalSurface} = collectPuddleLayers([riverEnd], 15, maxSurface);
   if (layers.length < minDepth) {
     return false;
   }
@@ -44,12 +44,34 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
     layers.forEach((l: point[]) => floodToLevel(l, targetWaterLevel))
 
   if (target.annotationColor !== undefined)
-    layers.forEach((layer: point[], index ) => annotateAll(layer, target.annotationColor!))
+    layers.forEach((layer: point[], index) => annotateAll(layer, target.annotationColor!))
 
-  const outerLayer = layers[layers.length - 1];
+  const outerLayer = layers[layers.length - 2];
 
   annotateAll(outerLayer, 10)
   log("generated puddle at " + JSON.stringify(riverEnd) + " with " + layers.length + " layers ")
+
+  const escapeSet = makeSet()
+  layers[layers.length - 2].forEach(escapeSet.add) //add the second outer layer to the escape set, so it wont search inwards
+  //try and find an escape route
+  //collect surface BLOCKS
+  if (outerLayer.length != 0) {
+
+    const puddleLevel = getZ(outerLayer[0], true);
+
+    const {surface, border, earlyPoint, exceeded} = collectSurfaceAndBorder(
+        outerLayer,
+        seenSet,
+        maxSurface, //equally distributed by level, stop earlier
+        (p: point) => getZ(p, true) < puddleLevel,
+        (p: point) => getZ(p, true) == puddleLevel
+    );
+    if (earlyPoint !== undefined) {
+      annotateAll(surface, 11)
+      markPos(earlyPoint, 4)
+    }
+  }
+
   return true;
 }
 
@@ -58,60 +80,69 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
  * @param start
  * @param maxLayers
  * @param maxSurface
+ * @param seenSet
  */
 export const collectPuddleLayers = (
-    start: point,
+    start: point[],
     maxLayers: number,
-    maxSurface: number
+    maxSurface: number,
+    seenSet: SeenSet = makeSet(),
 ): { layers: point[][]; seenSet: SeenSet, totalSurface: number } => {
-  let level = getZ(start, true);
+  let level = getZ(start[0], true);
 
   //iterators
-  let nextLevelOpen = [start];
+  let unprocessedBorder = start;
   let totalSurface = 0;
 
-  const seenSet = makeSet();
   const surfaceLayers: point[][] = [];
   log("collect puddle layers for start " + JSON.stringify(start) + " max layers: " + maxLayers + " max surface: " + maxSurface);
   for (let i = 0; i < maxLayers; level++, i++) {
-    if (nextLevelOpen.length == 0) break;
+    if (unprocessedBorder.length == 0) break;
 
     //collect surface BLOCKS
-    const { surface, border } = collectSurfaceAndBorder(
-      nextLevelOpen,
-      seenSet,
-      level,
-      maxSurface, //equally distributed by level, stop earlier
-      (p: point) => false,
-      (p: point) => getZ(p, true)
-    );
+    const {surface, border, earlyPoint} = collectSurfaceAndBorder(
+        unprocessedBorder,  //starting points for surface collection
+        seenSet,
+        maxSurface, //equally distributed by level, stop earlier
+        (p: point) => false,
+        (p: point) => getZ(p, true) <= level
+    )!;
 
     //stop if total surface would be exceeded
     if (totalSurface + surface.length > maxSurface) break;
 
-    //add surface to list of layers
+    //FIXME assert surface is never empty: if unprocessedBorder is not empty(should be impossible) and surface is empty, then the surface collection failed
     surfaceLayers.push(surface);
     totalSurface += surface.length;
 
     //prepare next run
-    nextLevelOpen = border;
+    unprocessedBorder = border;
   }
   return {layers: surfaceLayers, seenSet: seenSet, totalSurface: totalSurface};
 };
 
+/**
+ * collect points that are valid surface blocks into the surface list.
+ * collect direct neighbours of surface that are not valid surface blocks into the border list.
+ * runs until its finds no more connected surface blocks or maxSurface is exceeded
+ * @param openArr starting points in queue. not guaranteed to go into surface.
+ * @param seenSet only unseen points will be processed, or added to border or surface lists.
+ * @param level surface level
+ * @param maxSurface return undefine if maxSurface is exceeded
+ * @param returnEarly stop if this returns true for a point, return what was collected
+ * @param isValidSurface boolean function to split blocks into surface and border
+ */
 export const collectSurfaceAndBorder = (
-  openArr: point[],
-  seenSet: SeenSet,
-  level: number,
-  maxSurface: number,
-  failEarly: (p: point) => boolean,
-  getZ: (p: point) => number
-): { surface: point[]; border: point[] } => {
+    openArr: point[],
+    seenSet: SeenSet,
+    maxSurface: number,
+    returnEarly: (p: point) => boolean,
+    isValidSurface: (p: point) => boolean,
+): { surface: point[]; border: point[], earlyPoint: point | undefined, exceeded: boolean } => {
   //use next level open that was collected before
   const surface: queue = makeQueue();
 
   const border: queue = makeQueue();
-  const isAtOrBelowSurfaceLevel = (p: point) => getZ(p) <= level;
 
   //prepare open queue
   const open = makeQueue();
@@ -119,16 +150,25 @@ export const collectSurfaceAndBorder = (
   openArr.forEach(seenSet.add);
 
   let i = 0;
+  let exceeded = false;
+  let earlyPoint: point | undefined = undefined;
   while (!open.isEmpty()) {
     i++;
 
     const currentPoint = open.pop();
 
-    if (i > maxSurface || failEarly(currentPoint)) {
-      return { surface: [], border: [] };
+    if (i > maxSurface) {
+      exceeded = true;
+      break;
     }
 
-    if (isAtOrBelowSurfaceLevel(currentPoint)) surface.push(currentPoint);
+    if (returnEarly(currentPoint)) {
+      earlyPoint = currentPoint;
+      break;
+    }
+
+
+    if (isValidSurface(currentPoint)) surface.push(currentPoint);
     else {
       border.push(currentPoint);
       continue;
@@ -145,6 +185,8 @@ export const collectSurfaceAndBorder = (
 
   return {
     surface: surface.toArray(),
-    border: border.toArray(), //todo: maybe return the blocks below surface too and let wrapper decide how to handle?
+    border: border.toArray(),
+    earlyPoint: earlyPoint,
+    exceeded: exceeded
   };
 };
