@@ -1,7 +1,7 @@
 import {makeQueue, queue} from "./PointQueue";
 import {makeSet, SeenSet} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
-import {floodToLevel, getZ} from "./terrain";
+import {floodToLevel, getZ, markPos} from "./terrain";
 import {log} from "./log";
 
 export type PuddleExportTarget = {
@@ -15,6 +15,16 @@ export const annotateAll = (points: point[], annotationColor: number) => {
     dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, annotationColor);
   })
 }
+
+export const applyPuddleToMap = (puddleSurface: point[], waterLevel: number, target: PuddleExportTarget) => {
+  if (target.flood)
+    floodToLevel(puddleSurface, waterLevel);
+
+  if (target.annotationColor !== undefined)
+    annotateAll(puddleSurface, target.annotationColor!)
+
+}
+
 /**
  *
  * @param river
@@ -23,59 +33,31 @@ export const annotateAll = (points: point[], annotationColor: number) => {
  * @param target
  * @returns true if river is finishing in pond or existing waterbody
  */
-export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: number, target: PuddleExportTarget): boolean => {
-  if (river.length == 0) {
-    return false;
-  }
-
+export const findPondOutflow = (river: point[], maxSurface: number, minDepth: number): {
+  pondSurface: point[],
+  waterLevel: number,
+  depth: number,
+  escapePoint: point | undefined
+} => {
   const riverEnd = river[river.length - 1];
   //if (isWater(riverEnd)) {
   //  return true;
   //}
 
+  const {layers, seenSet, totalSurface, escapePoint} = collectPuddleLayers([riverEnd], 15, maxSurface);
 
-  const {layers, seenSet, totalSurface} = collectPuddleLayers([riverEnd], 15, maxSurface);
-  if (layers.length < minDepth) {
-    return false;
+  if (escapePoint !== undefined) {
+    markPos(escapePoint, 13);
   }
 
-  const targetWaterLevel = getZ(riverEnd, true) + layers.length;
-  if (target.flood)
-    layers.forEach((l: point[]) => floodToLevel(l, targetWaterLevel))
-
-  if (target.annotationColor !== undefined)
-    layers.forEach((layer: point[], index) => annotateAll(layer, target.annotationColor!))
-
-  const outerLayer = layers[layers.length - 2];
-
-  //annotateAll(outerLayer, 10)
-  log("generated puddle at " + JSON.stringify(riverEnd) + " with " + layers.length + " layers ")
-
-  /*
-  const escapeSet = makeSet()
-  layers[layers.length - 2].forEach(escapeSet.add) //add the second outer layer to the escape set, so it wont search inwards
-  //try and find an escape route
-  //collect surface BLOCKS
-  if (outerLayer.length != 0) {
-
-    const puddleLevel = getZ(outerLayer[0], true);
-
-    const {surface, border, earlyPoint, exceeded} = collectSurfaceAndBorder(
-        outerLayer,
-        seenSet,
-        maxSurface, //equally distributed by level, stop earlier
-        (p: point) => getZ(p, true) < puddleLevel,
-        (p: point) => getZ(p, true) == puddleLevel
-    );
-    if (earlyPoint !== undefined) {
-      annotateAll(surface, 11)
-      markPos(earlyPoint, 4)
-    }
-
-
-  }   */
-
-  return true;
+  const surfacePoints: point[] = []
+  layers.forEach((layer) => surfacePoints.push(...layer));
+  return {
+    pondSurface: surfacePoints,
+    waterLevel: getZ(riverEnd, true) + layers.length,
+    depth: layers.length,
+    escapePoint: escapePoint
+  };
 }
 
 /**
@@ -90,7 +72,7 @@ export const collectPuddleLayers = (
     maxLayers: number,
     maxSurface: number,
     seenSet: SeenSet = makeSet(),
-): { layers: point[][]; seenSet: SeenSet, totalSurface: number } => {
+): { layers: point[][]; seenSet: SeenSet, totalSurface: number, escapePoint: point | undefined } => {
   let level = getZ(start[0], true);
 
   //iterators
@@ -99,6 +81,7 @@ export const collectPuddleLayers = (
 
   const surfaceLayers: point[][] = [];
   log("collect puddle layers for start " + JSON.stringify(start) + " max layers: " + maxLayers + " max surface: " + maxSurface);
+  let escapePoint = undefined
   for (let i = 0; i < maxLayers; level++, i++) {
     if (open.length == 0) {
       log("no more open blocks, stop collecting layers");
@@ -110,15 +93,20 @@ export const collectPuddleLayers = (
         open,  //starting points for surface collection
         seenSet,
         maxSurface, //equally distributed by level, stop earlier
-        (p: point) => false,
-        (p: point) => getZ(p, true) <= level
+        (p: point) => getZ(p, true) < level,
+        (p: point) => getZ(p, true) == level
     )!;
+
+    if (earlyPoint !== undefined) {
+      escapePoint = earlyPoint;
+      break;
+    }
 
     //stop if total surface would be exceeded
     if (exceeded || totalSurface + surface.length > maxSurface) {
-      log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
-      annotateAll(surface, 14)
-      surfaceLayers.forEach((layer) => annotateAll(layer, 13))
+      //  log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
+      //  annotateAll(surface, 14)
+      //  surfaceLayers.forEach((layer) => annotateAll(layer, 13))
       break;
     }
 
@@ -129,7 +117,7 @@ export const collectPuddleLayers = (
     //prepare next run
     open = border;
   }
-  return {layers: surfaceLayers, seenSet: seenSet, totalSurface: totalSurface};
+  return {layers: surfaceLayers, seenSet: seenSet, totalSurface: totalSurface, escapePoint: escapePoint};
 };
 
 /**

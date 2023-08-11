@@ -3,7 +3,7 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {annotateAll, capRiverWithPond, PuddleExportTarget} from "./puddle";
+import {annotateAll, applyPuddleToMap, findPondOutflow, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./pathing/river";
 import {getZ, isWater, markPos} from "./terrain";
 
@@ -89,9 +89,11 @@ const main = () => {
         log("river start: " +  JSON.stringify(riverPath[0]) + " end: " +  JSON.stringify(riverPath[riverPath.length-1]))
         log("river downhill: " + riverPath.map((a) => getZ(a, true)).join(","))
         riverPath.forEach((p) => annotateAll([p], Math.max(1,Math.min(15,getZ(p, true) - 62))))
-        markPos(riverPath[0], 2)
-        markPos(riverPath[riverPath.length-1], 3)
-        capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
+        //markPos(riverPath[0], 2)
+        //markPos(riverPath[riverPath.length-1], 3)
+        const pond = findPondOutflow(riverPath, maxSurface, minDepth);
+        applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle);
+
       });
 
   longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
