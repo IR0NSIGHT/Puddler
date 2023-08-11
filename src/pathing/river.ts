@@ -2,7 +2,7 @@ import {makeSet, SeenSet} from "../SeenSet";
 import {log} from "../log";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
 import {getZ, isWater} from "../terrain";
-import {findPondOutflow} from "../puddle";
+import {applyPuddleToMap, findPondOutflow} from "../puddle";
 
 const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -21,18 +21,29 @@ const testIfDownhill = (path: point[]) => {
  * @param rivers
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
-  const path: parentedPoint[] = [{point: pos, parent: undefined, distance: 0}];
+  const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
   let safetyIt = 0;
   let current = pos;
   let riverMerged = false;
   while (safetyIt < 1000) {
     safetyIt++;
-    const pathToDrop = findClosestDrop([current], getZ(current));
+    if (getZ(current, true) < 62) //base water level reached
+        break;
+
+    let pathToDrop = findClosestDrop([current], getZ(current));
 
     if (pathToDrop.length == 0) {
       //abort if closestDrop coulndt find anything
-    //  const pond = findPondOutflow(riverPath, maxSurface)
-      break;
+      const pond = findPondOutflow([current], 10000)
+      if (pond.escapePoint !== undefined) {
+        applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
+        pathToDrop = pond.pondSurface.map(p => ({point: p, parent: path[path.length - 1], distance: -1}))
+
+        const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
+        pathToDrop.push(escapeFromPond);
+      } else {
+        break;
+      }
     }
 
 
