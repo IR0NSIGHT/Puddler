@@ -1,12 +1,19 @@
-import { SeenSet, makeSet } from "../SeenSet";
-import { log } from "../log";
-import {
-  point,
-  parentedPoint,
-  getNeighbourPoints,
-  parentedToList, addPoints,
-} from "../point";
-import { getZ, isWater, markPos } from "../terrain";
+import {makeSet, SeenSet} from "../SeenSet";
+import {log} from "../log";
+import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
+import {getZ, isWater} from "../terrain";
+import {annotateAll} from "../puddle";
+
+const testIfDownhill = (path: point[]) => {
+  for (let i = 0; i < path.length - 1; i++) {
+    const current = getZ(path[i], true);
+    const next = getZ(path[i + 1], true)
+    if (next > current)
+      return false;
+  }
+  return true;
+}
+
 
 /**
  * start a new river path at this position
@@ -14,7 +21,7 @@ import { getZ, isWater, markPos } from "../terrain";
  * @param rivers
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
-  const path: parentedPoint[] = [{ point: pos, parent: undefined, distance: 0 }];
+  const path: parentedPoint[] = [{point: pos, parent: undefined, distance: 0}];
   let i = 0;
   let current = pos;
   let waterReached = false;
@@ -43,7 +50,13 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       waterReached
   );
   path.forEach((p) => rivers.add(p.point));
-  return path.map((a) => a.point);
+  const pathPoints =path.map((a) => a.point);
+  if (testIfDownhill(pathPoints))
+    return pathPoints;
+  else {
+    annotateAll(pathPoints, 12);
+    return []
+  }
 };
 
 

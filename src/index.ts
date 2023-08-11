@@ -3,8 +3,9 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {capRiverWithPond, PuddleExportTarget} from "./puddle";
+import {annotateAll, capRiverWithPond, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./pathing/river";
+import {getZ, isWater, markPos} from "./terrain";
 
 const main = () => {
   const {
@@ -76,15 +77,24 @@ const main = () => {
 
   const longRivers = rivers
       .map((a) => capRiverStart(a, 10))
-      .filter((r) => r.length > minRiverLength);
+      .filter((r) => r.length > minRiverLength )
+
 
   log("export target river: " + JSON.stringify(exportTargetRiver));
-  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
+
 
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
-  rivers.forEach((riverPath) => {
-    capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
-  });
+  longRivers  //FIXME cap all potetntial rivers, not just hte long one
+      .forEach((riverPath) => {
+        log("river start: " +  JSON.stringify(riverPath[0]) + " end: " +  JSON.stringify(riverPath[riverPath.length-1]))
+        log("river downhill: " + riverPath.map((a) => getZ(a, true)).join(","))
+        riverPath.forEach((p) => annotateAll([p], Math.max(1,Math.min(15,getZ(p, true) - 62))))
+        markPos(riverPath[0], 2)
+        markPos(riverPath[riverPath.length-1], 3)
+        capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
+      });
+
+  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
 
   let totalLength = 0;
   longRivers.forEach((r) => (totalLength += r.length));

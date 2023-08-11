@@ -3,7 +3,7 @@
 //script.param.maxSurface.type=integer
 //script.param.maxSurface.description=maximum surface area of ponds
 //script.param.maxSurface.optional=false
-//script.param.maxSurface.default=500
+//script.param.maxSurface.default=10000
 
 //script.param.minDepth.type=integer
 //script.param.minDepth.description=minimal depth of ponds
