@@ -1,16 +1,17 @@
-import { SeenSet, makeSet } from "./SeenSet";
-import { log } from "./log";
+import { SeenSet, makeSet } from "../SeenSet";
+import { log } from "../log";
 import {
   point,
   parentedPoint,
   getNeighbourPoints,
-  parentedToList,
-} from "./point";
-import { getZ, isWater, markPos } from "./terrain";
+  parentedToList, addPoints,
+} from "../point";
+import { getZ, isWater, markPos } from "../terrain";
 
 /**
  * start a new river path at this position
  * @param pos
+ * @param rivers
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   const path: parentedPoint[] = [{ point: pos, parent: undefined, distance: 0 }];
@@ -19,7 +20,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   let waterReached = false;
   while (i < 1000) {
     i++;
-    const pathToDrop = findClosestDrop(current, getZ(current));
+    const pathToDrop = findClosestDrop([current], getZ(current));
     if (pathToDrop.length == 0)
       //abort if closestDrop coulndt find anything
       break;
@@ -60,22 +61,34 @@ export const insertInSortedQueue = (sortedQueue: parentedPoint[], point: parente
     sortedQueue.splice(i, 0, point);
 }
 
+
+export const averagePoint = (points: point[]): point => {
+    const sum = points.reduce((a, b) => addPoints(a, b), {x: 0, y: 0});
+    return {x: sum.x / points.length, y: sum.y / points.length};
+}
+
 /**
  * find the point closest to pos thats at least one block lower
- * @param pos
+ * @param startingPoints
  * @param posZ
  * @returns path to this point from pos where pos is the first entry, drop the last
  */
 export function findClosestDrop(
-  pos: point,
+  startingPoints: point[],
   posZ: number,
 ): parentedPoint[] {
   const seenSet: SeenSet = makeSet();
 
-  const queue: parentedPoint[] = [{ point: pos, parent: undefined, distance: 0 }];
+  const queue: parentedPoint[] = [];
+  startingPoints.forEach((p) => {
+    queue.push({ point: p, parent: undefined, distance: 0 })
+    seenSet.add(p);
+  });
   let next: parentedPoint;
   let safetyIterator = 0;
-  seenSet.add(pos);
+  let searchCenter: point = averagePoint(startingPoints)
+
+
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
 
@@ -103,7 +116,7 @@ export function findClosestDrop(
       if (lower) {
         //unknown point
         seenSet.add(n);
-        insertInSortedQueue(queue, { point: n, parent: next, distance: squaredDistanceBetweenPoints(n, pos) });
+        insertInSortedQueue(queue, { point: n, parent: next, distance: squaredDistanceBetweenPoints(n, searchCenter) });
       } else {
       }
     });

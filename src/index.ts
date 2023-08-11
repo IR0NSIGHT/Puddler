@@ -4,7 +4,7 @@ import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
 import {capRiverWithPond, PuddleExportTarget} from "./puddle";
-import {capRiverStart, pathRiverFrom} from "./river";
+import {capRiverStart, pathRiverFrom} from "./pathing/river";
 
 const main = () => {
   const {
