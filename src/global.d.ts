@@ -1,10 +1,7 @@
-import {Dimension} from "./worldpainterStubs/typescript/Dimension";
-import {World2} from "./worldpainterStubs/typescript/World2";
-import {ScriptingContext} from "./worldpainterStubs/typescript/ScriptingContext";
 
-declare const wp: ScriptingContext;
-declare const world: World2;
-declare const dimension: Dimension;
+declare const wp: import("./worldpainterStubs/typescript/ScriptingContext").ScriptingContext;
+declare const world: import("./worldpainterStubs/typescript/World2").World2;
+declare const dimension: import('./worldpainterStubs/typescript/Dimension').Dimension;
 declare const org: any; //org.pepsoft java package
 declare const params: {
   maxSurface: number;

@@ -20,7 +20,7 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
 
         if (target.annotationColor !== undefined) {
           l.forEach((p: point) => {
-            dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, target.annotationColor);
+            dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, target.annotationColor!);
           });
         }
       });
