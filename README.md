@@ -12,11 +12,10 @@ github: https://github.com/IR0NSIGHT/Puddler
 
 # How to use
 
-download the puddler.js file from the release tab  on the right or the link above
-(ITS NOT THE webpack.config.js FILE YOU SEE ABOVE!)
-
-mark all the spots where rivers can start with the CYAN annotation layer.
-in WorldPainter, open "run script" and select Puddler.js
-Select your wanted parameters and run the script.
+1. download the [newest release](https://github.com/IR0NSIGHT/Puddler/releases) as a zip file puddler.js file 
+2. unpack the zip folder somewhere
+3. mark all the spots where rivers can start in your worldpainter world with the CYAN annotation layer.
+4. in WorldPainter, on the top toolbar, center-right, open "run script" and select Puddler.js from the folder where you unpacked the zip file
+5. Select your wanted parameters and run the script. You can leave the default values to get a quick run with rivers and puddles.
 
 MIT LICENSED
