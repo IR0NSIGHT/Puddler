@@ -1,7 +1,7 @@
 import {makeQueue, queue} from "./PointQueue";
 import {makeSet, SeenSet} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
-import {floodToLevel, getZ, markPos} from "./terrain";
+import {floodToLevel, getZ} from "./terrain";
 import {log} from "./log";
 
 export type PuddleExportTarget = {
@@ -39,7 +39,7 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
     return false;
   }
 
-  const targetWaterLevel = getZ(riverEnd, true) + layers.length - 1;
+  const targetWaterLevel = getZ(riverEnd, true) + layers.length;
   if (target.flood)
     layers.forEach((l: point[]) => floodToLevel(l, targetWaterLevel))
 
@@ -48,9 +48,10 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
 
   const outerLayer = layers[layers.length - 2];
 
-  annotateAll(outerLayer, 10)
+  //annotateAll(outerLayer, 10)
   log("generated puddle at " + JSON.stringify(riverEnd) + " with " + layers.length + " layers ")
 
+  /*
   const escapeSet = makeSet()
   layers[layers.length - 2].forEach(escapeSet.add) //add the second outer layer to the escape set, so it wont search inwards
   //try and find an escape route
@@ -70,7 +71,9 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
       annotateAll(surface, 11)
       markPos(earlyPoint, 4)
     }
-  }
+
+
+  }   */
 
   return true;
 }
@@ -91,17 +94,20 @@ export const collectPuddleLayers = (
   let level = getZ(start[0], true);
 
   //iterators
-  let unprocessedBorder = start;
+  let open = start;
   let totalSurface = 0;
 
   const surfaceLayers: point[][] = [];
   log("collect puddle layers for start " + JSON.stringify(start) + " max layers: " + maxLayers + " max surface: " + maxSurface);
   for (let i = 0; i < maxLayers; level++, i++) {
-    if (unprocessedBorder.length == 0) break;
+    if (open.length == 0) {
+      log("no more open blocks, stop collecting layers");
+      break;
+    }
 
     //collect surface BLOCKS
-    const {surface, border, earlyPoint} = collectSurfaceAndBorder(
-        unprocessedBorder,  //starting points for surface collection
+    const {surface, border, earlyPoint, exceeded} = collectSurfaceAndBorder(
+        open,  //starting points for surface collection
         seenSet,
         maxSurface, //equally distributed by level, stop earlier
         (p: point) => false,
@@ -109,14 +115,19 @@ export const collectPuddleLayers = (
     )!;
 
     //stop if total surface would be exceeded
-    if (totalSurface + surface.length > maxSurface) break;
+    if (exceeded || totalSurface + surface.length > maxSurface) {
+      log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
+      annotateAll(surface, 14)
+      surfaceLayers.forEach((layer) => annotateAll(layer, 13))
+      break;
+    }
 
     //FIXME assert surface is never empty: if unprocessedBorder is not empty(should be impossible) and surface is empty, then the surface collection failed
     surfaceLayers.push(surface);
     totalSurface += surface.length;
 
     //prepare next run
-    unprocessedBorder = border;
+    open = border;
   }
   return {layers: surfaceLayers, seenSet: seenSet, totalSurface: totalSurface};
 };
