@@ -5,27 +5,43 @@ import {floodToLevel, getZ, isWater} from "./terrain";
 
 export type PuddleExportTarget = {
   flood: boolean,
-  annotationColor: number|undefined
+  annotationColor: number | undefined
 }
-export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: number, target: PuddleExportTarget) => {
-  if (river.length > 0) {
-    const riverEnd = river[river.length - 1];
-    if (!isWater(riverEnd)) {
-      const layers = collectPuddleLayers(riverEnd, 6, maxSurface);
-      if (layers.length < minDepth) return;
-      const bottomZ = getZ(riverEnd, true);
-      layers.forEach((l: point[], idx: number) => {
-        if (target.flood)
-          floodToLevel(l, bottomZ + layers.length - 1);
 
-        if (target.annotationColor !== undefined) {
-          l.forEach((p: point) => {
-            dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, target.annotationColor!);
-          });
-        }
-      });
-    }
-  }
+
+const annotateAll = (points: point[], annotationColor: number) => {
+  points.forEach((p: point) => {
+    dimension.setLayerValueAt(org.pepsoft.worldpainter.layers.Annotations.INSTANCE, p.x, p.y, annotationColor);
+  })
+}
+/**
+ *
+ * @param river
+ * @param maxSurface
+ * @param minDepth
+ * @param target
+ * @returns true if river is finishing in pond or existing waterbody
+ */
+export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: number, target: PuddleExportTarget): boolean => {
+  if (river.length > 0)
+    return false;
+
+  const riverEnd = river[river.length - 1];
+  if (isWater(riverEnd))
+    return true;
+
+  const {layers, seenSet} = collectPuddleLayers(riverEnd, 6, maxSurface);
+  if (layers.length < minDepth)
+    return false;
+
+  const targetWaterLevel = getZ(riverEnd, true) + layers.length - 1;
+  if (target.flood)
+    layers.forEach((l: point[]) => floodToLevel(l, targetWaterLevel))
+
+  if (target.annotationColor !== undefined)
+    layers.forEach((layer: point[]) => annotateAll(layer, target.annotationColor!))
+
+  return true;
 }
 
 /**
@@ -35,10 +51,10 @@ export const capRiverWithPond = (river: point[], maxSurface: number, minDepth: n
  * @param maxSurface
  */
 export const collectPuddleLayers = (
-  start: point,
-  maxLayers: number,
-  maxSurface: number
-): point[][] => {
+    start: point,
+    maxLayers: number,
+    maxSurface: number
+): { layers: point[][]; seenSet: SeenSet } => {
   let level = getZ(start, true);
   const maxLevel = level + maxLayers;
 
@@ -74,7 +90,7 @@ export const collectPuddleLayers = (
     nextLevelOpen = border;
   }
 
-  return surfaceLayers;
+  return {layers: surfaceLayers, seenSet: seenSet};
 };
 
 export const collectSurfaceAndBorder = (
