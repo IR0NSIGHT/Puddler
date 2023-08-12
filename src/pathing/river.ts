@@ -25,6 +25,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   let safetyIt = 0;
   let current = pos;
   let riverMerged = false;
+  const thisRiverSet = makeSet();
   while (safetyIt < 1000) {
     safetyIt++;
     if (getZ(current, true) < 62) //base water level reached
@@ -38,7 +39,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       if (pond.escapePoint !== undefined) {
         applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
         pathToDrop = pond.pondSurface.map(p => ({point: p, parent: path[path.length - 1], distance: -1}))
-
+        //FIXME pond filling can happen backwards, trying to fill already filled ponds.
+        // currently there is no record keeping of which blocks to ignore for pond-escape point search!
         const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
         pathToDrop.push(escapeFromPond);
       } else {
@@ -58,6 +60,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
         break;
       }
       path.push(point);
+      thisRiverSet.add(point.point);
       // rivers.add(point.point);
     }
     if (riverMerged) break;
