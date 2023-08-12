@@ -1,6 +1,6 @@
 import {averagePoint, findClosestDrop, insertInSortedQueue, pathRiverFrom, squaredDistanceBetweenPoints} from "./river";
 import {parentedPoint} from "../point";
-import { makeSet, SeenSet } from '../SeenSet';
+import {makeSet} from '../SeenSet';
 import {getZ} from "../terrain";
 
 // Replace the original module with the mock implementation
@@ -50,9 +50,6 @@ describe('helper function river path', () => {
 });
 
 describe("river pathing", () => {
-
-
-
     beforeAll(() => {
         (global as any).dimension = {
             getLowestX: () => 0,
@@ -70,9 +67,20 @@ describe("river pathing", () => {
     });
 
     test("path to drop follows easy downhill", () => {
-        const path  =findClosestDrop({x: 5, y: 5}, 5);
+        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
         expect(path[0].point).toEqual({x: 4, y: 5})
         expect(path.length).toBe(1)
+    })
+
+    test("path to drop can cross flat area", () => {
+        //mock: area is flat, at (2,5) is a drop
+        expect((global as any).dimension.getHeightAt).toBeDefined();
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            return (x == 2 && y == 5) ? 0 : 42
+        }
+        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
+        expect(path.length ).toEqual(3)
+        expect(path[path.length - 1].point).toEqual({x: 2, y: 5})
     })
 
     test("river paths downhill", () => {
