@@ -1,5 +1,5 @@
 import {averagePoint, findClosestDrop, insertInSortedQueue, pathRiverFrom, squaredDistanceBetweenPoints} from "./river";
-import {parentedPoint} from "../point";
+import {parentedPoint, point} from "../point";
 import {makeSet} from '../SeenSet';
 import {getZ} from "../terrain";
 import {findPondOutflow} from "../puddle";
@@ -166,10 +166,50 @@ describe("river pathing", () => {
         }
         const start = {x: 5, y: 5};
 
-        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        const {pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
         expect(pondSurface.length).toEqual(2)
         expect(waterLevel).toEqual(110)
         expect(depth).toEqual(10)
         expect(escapePoint).toEqual({x: 5, y: 2})
+    })
+
+
+    test("river escapes pond twice, second pond swallows first pond", () => {
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 1 && y == 1) return 100;    //first and start pond
+            if (x == 3 && y == 3) return 100;    //second pond
+            if (x == 8 && y == 8) return 0;    //final pond
+
+            if (x >= 5 || y >= 5) return 200;    //higher land everywhere except 0..5 => 0..5 will be the swallowing pond
+            return 110
+        }
+        const start = {x: 0, y: 0};
+
+        const {river, ponds} = pathRiverFrom(start, makeSet())
+        expect(river).toBeDefined()
+        expect(river[0]).toEqual(start)
+        expect(river[river.length - 1]).toEqual({x: 8, y: 8})
+        expect(ponds.length).toEqual(2)
+        expect(ponds[0].pondSurface).toEqual([{x: 1, y: 1}])
+        expect(ponds[0].escapePoint).toEqual({x: 3, y: 3})
+
+        expect(ponds[1].pondSurface[0]).toEqual({x: 3, y: 3})
+        expect(ponds[1].escapePoint).toEqual({x: 8, y: 8})
+
+        const comparePoints = (a: point, b: point): number => {
+            if (a.x !== b.x) {
+                return a.x - b.x;
+            }
+
+            return a.y - b.y;
+        };
+        const pondIdeal: point[] = []
+        for (let x = 0; x < 5; x++)
+            for (let y = 0; y < 5; y++)
+                pondIdeal.push({x: x, y: y})
+
+        expect(pondIdeal.sort(comparePoints)).toEqual(ponds[1].pondSurface.sort(comparePoints))
+
     })
 })
