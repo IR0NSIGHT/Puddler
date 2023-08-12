@@ -4,7 +4,7 @@ import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} fr
 import {getZ, isWater, markPos} from "../terrain";
 import {annotateAll, applyPuddleToMap, findPondOutflow} from "../puddle";
 
-const testIfDownhill = (path: point[]) => {
+export const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
     const current = getZ(path[i], true);
     const next = getZ(path[i + 1], true)
@@ -178,6 +178,8 @@ export const capRiverStart = (river: point[], slice: number) => {
 
 /**
  * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
+ * @param p
+ * @param i
  * @param river point array that flows from high to low
  * @returns river with z values
  */
@@ -193,3 +195,8 @@ export const minFilter = (
     z: minNeighbourNonRiver,
   };
 };
+
+
+export const getZWrapper = (pos: point, floor: boolean): number => {
+  return getZ(pos, floor);
+}

@@ -5,7 +5,8 @@ import {log} from "./log";
 import {mapDimensions, point} from "./point";
 import {annotateAll, applyPuddleToMap, findPondOutflow, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./pathing/river";
-import {getZ, isWater, markPos} from "./terrain";
+
+
 
 const main = () => {
   const {
