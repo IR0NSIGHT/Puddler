@@ -37,7 +37,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
 
     if (pathToDrop.length == 0) {
       //abort if closestDrop coulndt find anything
-      const pond = findPondOutflow([current], 100000, puddleDebugSet)
+      const pond = findPondOutflow([current], 1000000, puddleDebugSet)
       applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
 
       if (pond.escapePoint !== undefined) {

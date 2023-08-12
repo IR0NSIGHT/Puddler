@@ -69,11 +69,6 @@ export const collectPuddleLayers = (
 ): { layers: point[][], totalSurface: number, escapePoint: point | undefined } => {
   let level = getZ(start[0], true);
   const internalSeenSet = makeSet();
-  const combinedIgnoreSet = {
-    has: (p: point) => ignoreSet.has(p) || internalSeenSet.has(p),
-    hasNot: (p: point) => !ignoreSet.has(p) && !internalSeenSet.has(p),
-  }
-
   //iterators
   let open = start;
   let totalSurface = 0;
@@ -90,9 +85,9 @@ export const collectPuddleLayers = (
     //collect surface BLOCKS
     const {surface, border, earlyPoint, exceeded} = collectSurfaceAndBorder(
         open,  //starting points for surface collection
-        combinedIgnoreSet,
+        internalSeenSet,
         maxSurface, //equally distributed by level, stop earlier
-        (p: point) => getZ(p, true) < level,
+        (p: point) => ignoreSet.hasNot(p) && getZ(p, true) < level,
         (p: point) => getZ(p, true) == level
     )!;
 
@@ -126,7 +121,7 @@ export const collectPuddleLayers = (
  * collect direct neighbours of surface that are not valid surface blocks into the border list.
  * runs until its finds no more connected surface blocks or maxSurface is exceeded
  * @param openArr starting points in queue. not guaranteed to go into surface.
- * @param ignoreSet ignore these points when collecting surface. will not be mutated.
+ * @param ignoreSet ignore these points when testing returnEarly. readonly.
  * @param maxSurface return undefine if maxSurface is exceeded
  * @param returnEarly stop if this returns true for a point, return what was collected
  * @param isValidSurface boolean function to split blocks into surface and border
@@ -175,7 +170,7 @@ export const collectSurfaceAndBorder = (
     }
 
     const ns = getNeighbourPoints(currentPoint);
-    const newNeighbors = ns.filter(seenSet.hasNot).filter(ignoreSet.hasNot);
+    const newNeighbors = ns.filter(seenSet.hasNot).filter(ignoreSet.hasNot)
     //mark as seen
     newNeighbors.forEach((a) => {
       seenSet.add(a);
