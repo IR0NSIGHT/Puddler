@@ -1,8 +1,7 @@
 import {makeSet, SeenSet} from "../SeenSet";
-import {log} from "../log";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater, markPos} from "../terrain";
-import {annotateAll, applyPuddleToMap, findPondOutflow, PondGenerationParams} from "../puddle";
+import {getZ, isWater} from "../terrain";
+import {findPondOutflow, PondGenerationParams} from "../puddle";
 
 export const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -45,8 +44,16 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         ponds.push(pond);
         pond.pondSurface.forEach(puddleDebugSet.add);
 
-        const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
-        pathToDrop = [escapeFromPond];
+        const escapePoint: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
+
+        const thisPond = makeSet();
+        pond.pondSurface.forEach(thisPond.add);
+        //connect pond to escape
+        const pathEscapeToPond = findClosestDrop(escapePoint.point,
+            getZ(escapePoint.point),
+            thisPond.has)?.reverse();
+
+        pathToDrop = [escapePoint];
       } else {
         break;
       }
@@ -101,11 +108,15 @@ export const averagePoint = (points: point[]): point => {
  * find the point closest to pos thats at least one block lower
  * @param startingPoint
  * @param posZ
+ * @param isDrop
+ * @param isValidNeighbour
  * @returns path to this point with drop being the last
  */
 export function findClosestDrop(
-  startingPoint: point,
-  posZ: number,
+    startingPoint: point,
+    posZ: number,
+    isDrop: (p: point) => boolean = (p) => getZ(next.point, true) < Math.round(posZ),
+    isValidNeighbour: (p: point) => boolean = (p) => getZ(p, false) <= posZ
 ): parentedPoint[]|undefined {
   const seenSet: SeenSet = makeSet();
 
@@ -120,7 +131,7 @@ export function findClosestDrop(
     next = queue.shift() as parentedPoint;
 
     //abort condition
-    if (getZ(next.point, true) < Math.round(posZ)) {
+    if (isDrop(next.point)) {
       const path = parentedToList(next, []).reverse();
       //path starts with startingPoint, which is not wanted
       path.shift();
@@ -130,22 +141,17 @@ export function findClosestDrop(
     let neighbours = getNeighbourPoints(next.point).filter(seenSet.hasNot);
     const trueLowerNeighbours = neighbours.filter(n => getZ(n, true) < Math.round(posZ));
     if (trueLowerNeighbours.length == 0) {
-        //no lower neighbour, river is in flat area => sort by tinyest height difference
-        neighbours = neighbours.sort((a, b) => {
-            const aZ = getZ(a, false);
-            const bZ = getZ(b, false);
-            return aZ-bZ;
-        });
+      //no lower neighbour, river is in flat area => sort by tinyest height difference
+      neighbours = neighbours.sort((a, b) => {
+        const aZ = getZ(a, false);
+        const bZ = getZ(b, false);
+        return aZ - bZ;
+      });
     }
 
-    neighbours.forEach(function (n) {
-      const lower = getZ(n, false) <= posZ;
-      if (lower) {
-        //unknown point
-        seenSet.add(n);
-        insertInSortedQueue(queue, { point: n, parent: next, distance: squaredDistanceBetweenPoints(n, searchCenter) });
-      } else {
-      }
+    neighbours.filter(isValidNeighbour).forEach((n) => {
+      seenSet.add(n);
+      insertInSortedQueue(queue, {point: n, parent: next, distance: squaredDistanceBetweenPoints(n, searchCenter)});
     });
     safetyIterator++;
   }

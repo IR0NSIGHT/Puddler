@@ -124,7 +124,7 @@ describe("river pathing", () => {
         expect(ponds).toEqual([])
     })
 
-    test("river escapes simple pond", () => {
+    test("findPondOutflow escapes simple pond", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             if (x == 5 && (y == 5 ||y == 6)) return 100;
@@ -140,7 +140,7 @@ describe("river pathing", () => {
         expect(escapePoint).toEqual({x: 0, y: 5})
     })
 
-    test("river escapes deep pond", () => {
+    test("findPondOutflow escapes deep pond", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             if (x == 5 && (y == 5 ||y == 6)) return 100;
@@ -156,7 +156,7 @@ describe("river pathing", () => {
         expect(escapePoint).toEqual({x: 0, y: 5})
     })
 
-    test("river paths after escape from pond", () => {
+    test("findPondOutflow doesnt walk uphill", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             if (x == 5 && (y == 5 ||y == 6)) return 100;    //first and start pond
@@ -211,5 +211,28 @@ describe("river pathing", () => {
 
         expect(pondIdeal.sort(comparePoints)).toEqual(ponds[1].pondSurface.sort(comparePoints))
 
+    })
+
+    test("river escapes pond and connects escape to pond", () => {
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 5 && y == 5) return 100;
+            if (x == 0 && y == 5) return 0; //dropout
+            return 110
+        }
+        const start = {x: 8, y: 5};
+
+        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
+        expect(river).toEqual([
+            {x: 8, y: 5},
+            {x: 7, y: 5},
+            {x: 6, y: 5},
+            {x: 5, y: 5}, //pond bottom
+            {x: 4, y: 5},
+            {x: 3, y: 5},
+            {x: 2, y: 5},
+            {x: 1, y: 5},
+            {x: 0, y: 5} //escape point
+        ])
     })
 })
