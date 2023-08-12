@@ -68,6 +68,11 @@ export const collectPuddleLayers = (
     ignoreSet: SeenSetReadOnly = makeSet(),
 ): { layers: point[][], totalSurface: number, escapePoint: point | undefined } => {
   let level = getZ(start[0], true);
+  const internalSeenSet = makeSet();
+  const combinedIgnoreSet = {
+    has: (p: point) => ignoreSet.has(p) || internalSeenSet.has(p),
+    hasNot: (p: point) => !ignoreSet.has(p) && !internalSeenSet.has(p),
+  }
 
   //iterators
   let open = start;
@@ -85,7 +90,7 @@ export const collectPuddleLayers = (
     //collect surface BLOCKS
     const {surface, border, earlyPoint, exceeded} = collectSurfaceAndBorder(
         open,  //starting points for surface collection
-        ignoreSet,
+        combinedIgnoreSet,
         maxSurface, //equally distributed by level, stop earlier
         (p: point) => getZ(p, true) < level,
         (p: point) => getZ(p, true) == level
@@ -106,6 +111,7 @@ export const collectPuddleLayers = (
 
     //FIXME assert surface is never empty: if unprocessedBorder is not empty(should be impossible) and surface is empty, then the surface collection failed
     surfaceLayers.push(surface);
+    surface.forEach(internalSeenSet.add);
     totalSurface += surface.length;
 
     //prepare next run
