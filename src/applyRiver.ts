@@ -1,6 +1,7 @@
 import {point} from "./point";
 import {isWater, setWaterLevel, setZ} from "./terrain";
-import {minFilter} from "./pathing/river";
+
+import {minFilter} from "./pathing/postprocessing";
 
 export type RiverExportTarget = {
     waterlevel: number|undefined,
