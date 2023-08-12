@@ -49,11 +49,12 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         const thisPond = makeSet();
         pond.pondSurface.forEach(thisPond.add);
         //connect pond to escape
-        const pathEscapeToPond = findClosestDrop(escapePoint.point,
-            getZ(escapePoint.point),
-            thisPond.has)?.reverse();
-
-        pathToDrop = [escapePoint];
+        const pathEscapeToPond = findClosestDrop(current,
+            getZ(current),
+            (p) => p.x == escapePoint.point.x && p.y == escapePoint.point.y,
+            (p) => true
+        )
+        pathToDrop = pathEscapeToPond!;
       } else {
         break;
       }
@@ -131,6 +132,9 @@ export function findClosestDrop(
     next = queue.shift() as parentedPoint;
 
     //abort condition
+    if (next.point.x == 0 && next.point.y == 5) {
+      console.log("owo")
+    }
     if (isDrop(next.point)) {
       const path = parentedToList(next, []).reverse();
       //path starts with startingPoint, which is not wanted
