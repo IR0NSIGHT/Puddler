@@ -54,7 +54,10 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
             (p) => p.x == escapePoint.point.x && p.y == escapePoint.point.y,
             (p) => true
         )
-        pathToDrop = pathEscapeToPond!;
+        if (pathEscapeToPond == undefined) {
+          break;
+        }
+        pathToDrop = pathEscapeToPond;
       } else {
         break;
       }
