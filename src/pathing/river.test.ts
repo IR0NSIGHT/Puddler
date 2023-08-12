@@ -112,15 +112,16 @@ describe("river pathing", () => {
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             return x + 62
         }
-
-        const path = pathRiverFrom({x: 5, y: 5}, makeSet())
-        expect(path).toBeDefined()
-        expect(path).toEqual([{"x": 5, "y": 5},
+        const {river, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet())
+        expect(river).toBeDefined()
+        expect(river).toEqual([
+            {"x": 5, "y": 5},
             {"x": 4, "y": 5},
             {"x": 3, "y": 5},
             {"x": 2, "y": 5},
             {"x": 1, "y": 5},
             {"x": 0, "y": 5}])
+        expect(ponds).toEqual([])
     })
 
     test("river escapes simple pond", () => {
@@ -136,6 +137,22 @@ describe("river pathing", () => {
         expect(pondSurface.length).toEqual(2)
         expect(waterLevel).toEqual(110)
         expect(depth).toEqual(10)
+        expect(escapePoint).toEqual({x: 0, y: 5})
+    })
+
+    test("river escapes deep pond", () => {
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 5 && (y == 5 ||y == 6)) return 100;
+            if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
+            return 200
+        }
+        const start = {x: 5, y: 5};
+
+        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        expect(pondSurface.length).toEqual(2)
+        expect(waterLevel).toEqual(200)
+        expect(depth).toEqual(100)
         expect(escapePoint).toEqual({x: 0, y: 5})
     })
 

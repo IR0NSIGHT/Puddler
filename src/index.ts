@@ -3,9 +3,8 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {annotateAll, applyPuddleToMap, findPondOutflow, PuddleExportTarget} from "./puddle";
+import {applyPuddleToMap, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./pathing/river";
-
 
 
 const main = () => {
@@ -77,8 +76,11 @@ const main = () => {
   }
 
   const longRivers = rivers
-      .map((a) => capRiverStart(a, 10))
-      .filter((r) => r.length > minRiverLength )
+      .map((a) => ({
+        ...a,
+        river: capRiverStart(a.river, 10)
+      }))
+      .filter((r) => r.river.length > minRiverLength)
 
 
   log("export target river: " + JSON.stringify(exportTargetRiver));
@@ -86,10 +88,10 @@ const main = () => {
 
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
 
-  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
-
+  longRivers.forEach(r => applyRiverToTerrain(r.river, exportTargetRiver));
+  longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
   let totalLength = 0;
-  longRivers.forEach((r) => (totalLength += r.length));
+  longRivers.forEach((r) => (totalLength += r.river.length));
   //collect puddles
   log(
       "script too =" +

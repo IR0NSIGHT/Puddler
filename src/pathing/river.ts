@@ -20,13 +20,14 @@ export const testIfDownhill = (path: point[]) => {
  * @param pos
  * @param rivers
  */
-export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
+export const pathRiverFrom = (pos: point, rivers: SeenSet): {river: point[], ponds: {pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined}[] } => {
   const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
   let safetyIt = 0;
   let current = pos;
   let riverMerged = false;
   const thisRiverSet = makeSet();
   const puddleDebugSet = makeSet();
+  const ponds = [];
 
   while (safetyIt < 1000) {
     safetyIt++;
@@ -41,7 +42,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
       //applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
 
       if (pond.escapePoint !== undefined) {
-
+        ponds.push(pond);
         //debug
         const illegal = pond.pondSurface.filter( puddleDebugSet.has);
         annotateAll(illegal, 14);
@@ -51,12 +52,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
         annotateAll(pond.pondSurface, 12)
         //debug end
 
-
-        pathToDrop = pond.pondSurface.map(p => ({point: p, parent: path[path.length - 1], distance: -1}))
-        //FIXME pond filling can happen backwards, trying to fill already filled ponds.
-        // currently there is no record keeping of which blocks to ignore for pond-escape point search!
         const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
-        pathToDrop.push(escapeFromPond);
+        pathToDrop = [escapeFromPond];
       } else {
         break;
       }
@@ -82,14 +79,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
     //end of path is droppoint
     current = pathToDrop[pathToDrop.length - 1].point;
   }
-  log(
-      "river stopped at " +
-      JSON.stringify(path[path.length - 1].point) +
-      " river merged: " +
-      riverMerged
-  );
   path.forEach((p) => rivers.add(p.point));
-  return path.map((a) => a.point);
+  return { river: path.map((a) => a.point), ponds: ponds};
 };
 
 
