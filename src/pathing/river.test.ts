@@ -50,7 +50,7 @@ describe('helper function river path', () => {
 });
 
 describe("river pathing", () => {
-    beforeAll(() => {
+    beforeEach(() => {
         (global as any).dimension = {
             getLowestX: () => 0,
             getLowestY: () => 0,
@@ -61,7 +61,7 @@ describe("river pathing", () => {
         (global as any).print = (s: string) => console.log(s);
     })
 
-    afterAll(() => {
+    afterEach(() => {
         (global as any).dimension = undefined;
         (global as any).print = undefined;
     });
@@ -81,6 +81,28 @@ describe("river pathing", () => {
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
         expect(path.length ).toEqual(3)
         expect(path[path.length - 1].point).toEqual({x: 2, y: 5})
+    })
+
+    test("path to drop can fail if no drop", () => {
+        //mock: area is flat, starts in drop
+        expect((global as any).dimension.getHeightAt).toBeDefined();
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            return (x == 5 && y == 5) ? 0 : 42
+        }
+        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
+        expect(path.length ).toEqual(0)
+    })
+
+    test("path to drop can not walk uphill to drop", () => {
+        //mock: area is flat, starts in drop
+        expect((global as any).dimension.getHeightAt).toBeDefined();
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 5 && y == 5) return 10;
+            if (x == 0 && y == 0) return 0; //existing drop but not reachable without going uphill
+            return 42
+        }
+        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
+        expect(path.length ).toEqual(0)
     })
 
     test("river paths downhill", () => {
