@@ -33,7 +33,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
     if (getZ(current, true) < 62) //base water level reached
         break;
 
-    let pathToDrop = findClosestDrop([current], getZ(current));
+    let pathToDrop = findClosestDrop(current, getZ(current));
 
     if (pathToDrop.length == 0) {
       //abort if closestDrop coulndt find anything
@@ -116,25 +116,22 @@ export const averagePoint = (points: point[]): point => {
 
 /**
  * find the point closest to pos thats at least one block lower
- * @param startingPoints
+ * @param startingPoint
  * @param posZ
- * @returns path to this point from pos where pos is the first entry, drop the last
+ * @returns path to this point with drop being the last
  */
 export function findClosestDrop(
-  startingPoints: point[],
+  startingPoint: point,
   posZ: number,
 ): parentedPoint[] {
   const seenSet: SeenSet = makeSet();
 
   const queue: parentedPoint[] = [];
-  startingPoints.forEach((p) => {
-    queue.push({ point: p, parent: undefined, distance: 0 })
-    seenSet.add(p);
-  });
+  queue.push({ point: startingPoint, parent: undefined, distance: 0 })
+  seenSet.add(startingPoint);
   let next: parentedPoint;
   let safetyIterator = 0;
-  let searchCenter: point = averagePoint(startingPoints)
-
+  let searchCenter: point = startingPoint
 
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
@@ -142,6 +139,8 @@ export function findClosestDrop(
     //abort condition
     if (getZ(next.point, true) < Math.round(posZ)) {
       const path = parentedToList(next, []).reverse();
+      //path starts with startingPoint, which is not wanted
+      path.shift();
       return path;
     }
 
@@ -154,8 +153,6 @@ export function findClosestDrop(
             const bZ = getZ(b, false);
             return aZ-bZ;
         });
-
-     //   markPos(next.point, 3)
     }
 
     neighbours.forEach(function (n) {
