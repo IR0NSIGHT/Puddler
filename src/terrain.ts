@@ -1,9 +1,9 @@
 import {point} from "./point";
 import {annotateAll} from "./puddle";
 
-export function getZ(pos: point, floor?: boolean): number {
+export function getZ(pos: point, round?: boolean): number {
   const z = dimension.getHeightAt(pos.x, pos.y);
-  return floor ? Math.round(z) : z;
+  return round ? Math.round(z) : z;
 }
 
 export const setWaterLevel = (p: point, z: number): void => {

@@ -40,10 +40,6 @@ export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreSet
 } => {
   const {layers, escapePoint} = collectPuddleLayers(startPos, 15, maxSurface, ignoreSet);
 
-  if (escapePoint !== undefined) {
-    markPos(escapePoint, 13);
-  }
-
   const surfacePoints: point[] = []
   layers.forEach((layer) => surfacePoints.push(...layer));
   return {
@@ -74,11 +70,9 @@ export const collectPuddleLayers = (
   let totalSurface = 0;
 
   const surfaceLayers: point[][] = [];
-  log("collect puddle layers for start " + JSON.stringify(start) + " max layers: " + maxLayers + " max surface: " + maxSurface);
   let escapePoint = undefined
   for (let i = 0; i < maxLayers; level++, i++) {
     if (open.length == 0) {
-      log("no more open blocks, stop collecting layers");
       break;
     }
 

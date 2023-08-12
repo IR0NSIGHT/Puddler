@@ -2,10 +2,10 @@ import {averagePoint, findClosestDrop, insertInSortedQueue, pathRiverFrom, squar
 import {parentedPoint} from "../point";
 import {makeSet} from '../SeenSet';
 import {getZ} from "../terrain";
+import {findPondOutflow} from "../puddle";
 
 // Replace the original module with the mock implementation
 jest.mock('../SeenSet');
-
 
 describe('helper function river path', () => {
     test("distance calculation easy", () => {
@@ -68,19 +68,20 @@ describe("river pathing", () => {
 
     test("path to drop follows easy downhill", () => {
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path[0].point).toEqual({x: 4, y: 5})
-        expect(path.length).toBe(1)
+        expect(path).toBeDefined()
+        expect(path![0].point).toEqual({x: 4, y: 5})
+        expect(path!.length).toBe(1)
     })
 
     test("path to drop can cross flat area", () => {
         //mock: area is flat, at (2,5) is a drop
-        expect((global as any).dimension.getHeightAt).toBeDefined();
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             return (x == 2 && y == 5) ? 0 : 42
         }
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path.length ).toEqual(3)
-        expect(path[path.length - 1].point).toEqual({x: 2, y: 5})
+        expect(path).toBeDefined()
+        expect(path!.length ).toEqual(3)
+        expect(path![path!.length - 1].point).toEqual({x: 2, y: 5})
     })
 
     test("path to drop can fail if no drop", () => {
@@ -90,25 +91,58 @@ describe("river pathing", () => {
             return (x == 5 && y == 5) ? 0 : 42
         }
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path.length ).toEqual(0)
+        expect(path).toBeUndefined();
     })
 
     test("path to drop can not walk uphill to drop", () => {
         //mock: area is flat, starts in drop
-        expect((global as any).dimension.getHeightAt).toBeDefined();
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             if (x == 5 && y == 5) return 10;
             if (x == 0 && y == 0) return 0; //existing drop but not reachable without going uphill
             return 42
         }
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path.length ).toEqual(0)
+        expect(path).toBeUndefined();
     })
 
     test("river paths downhill", () => {
         const path = pathRiverFrom({x: 5, y: 5}, makeSet())
+        expect(path).toBeDefined()
         expect(path[0]).toEqual({x: 5, y: 5})
         expect(path.length).toEqual(10)
         expect(path[9]).toEqual({x: 0, y: 0})
+    })
+
+    test("river escapes simple pond", () => {
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 5 && (y == 5 ||y == 6)) return 100;
+            if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
+            return 110
+        }
+        const start = {x: 5, y: 5};
+
+        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        expect(pondSurface.length).toEqual(2)
+        expect(waterLevel).toEqual(110)
+        expect(depth).toEqual(10)
+        expect(escapePoint).toEqual({x: 0, y: 5})
+    })
+
+    test("river paths after escape from pond", () => {
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 5 && (y == 5 ||y == 6)) return 100;    //first and start pond
+            if (x == 5 && (y == 1 ||y == 2)) return 100;    //second pond to traverse
+            if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
+            return 110
+        }
+        const start = {x: 5, y: 5};
+
+        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        expect(pondSurface.length).toEqual(2)
+        expect(waterLevel).toEqual(110)
+        expect(depth).toEqual(10)
+        expect(escapePoint).toEqual({x: 5, y: 2})
     })
 })

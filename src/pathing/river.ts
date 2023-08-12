@@ -35,7 +35,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
 
     let pathToDrop = findClosestDrop(current, getZ(current));
 
-    if (pathToDrop.length == 0) {
+    if (pathToDrop == undefined) {
       //abort if closestDrop coulndt find anything
       const pond = findPondOutflow([current], 1000000, puddleDebugSet)
       applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
@@ -123,7 +123,7 @@ export const averagePoint = (points: point[]): point => {
 export function findClosestDrop(
   startingPoint: point,
   posZ: number,
-): parentedPoint[] {
+): parentedPoint[]|undefined {
   const seenSet: SeenSet = makeSet();
 
   const queue: parentedPoint[] = [];
@@ -166,7 +166,7 @@ export function findClosestDrop(
     });
     safetyIterator++;
   }
-  return [];
+  return undefined;
 }
 
 export const capRiverStart = (river: point[], slice: number) => {
