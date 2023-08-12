@@ -134,10 +134,6 @@ export function findClosestDrop(
   while (queue.length != 0 && safetyIterator < 10000) {
     next = queue.shift() as parentedPoint;
 
-    //abort condition
-    if (next.point.x == 0 && next.point.y == 5) {
-      console.log("owo")
-    }
     if (isDrop(next.point)) {
       const path = parentedToList(next, []).reverse();
       //path starts with startingPoint, which is not wanted
