@@ -84,17 +84,6 @@ const main = () => {
 
 
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
-  longRivers  //FIXME cap all potetntial rivers, not just hte long one
-      .forEach((riverPath) => {
-        log("river start: " +  JSON.stringify(riverPath[0]) + " end: " +  JSON.stringify(riverPath[riverPath.length-1]))
-        log("river downhill: " + riverPath.map((a) => getZ(a, true)).join(","))
-        riverPath.forEach((p) => annotateAll([p], Math.max(1,Math.min(15,getZ(p, true) - 62))))
-        //markPos(riverPath[0], 2)
-        //markPos(riverPath[riverPath.length-1], 3)
-        const pond = findPondOutflow([riverPath[riverPath.length-1]], maxSurface);
-        applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle);
-
-      });
 
   longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
 
