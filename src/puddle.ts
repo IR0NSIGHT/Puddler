@@ -29,16 +29,16 @@ export const applyPuddleToMap = (puddleSurface: point[], waterLevel: number, tar
  *
  * @param startPos starting positions for search. index zero will be considered bottom height of pond. should all be same height
  * @param maxSurface
- * @param ignoreSet ignore these points when collecting surface and searching for outflow. are considered "invalid neighbours". will not be mutated.
+ * @param ignoreAsEscape ignore these points trying to escape. will still be part of surface.
  * @returns true if river is finishing in pond or existing waterbody
  */
-export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreSet: SeenSetReadOnly): {
+export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreAsEscape: SeenSetReadOnly): {
   pondSurface: point[],
   waterLevel: number,
   depth: number,
   escapePoint: point | undefined
 } => {
-  const {layers, escapePoint} = collectPuddleLayers(startPos,  maxSurface, ignoreSet);
+  const {layers, escapePoint} = collectPuddleLayers(startPos,  maxSurface, ignoreAsEscape);
 
   const surfacePoints: point[] = []
   layers.forEach((layer) => surfacePoints.push(...layer));
@@ -81,7 +81,7 @@ export const collectPuddleLayers = (
         internalSeenSet,
         maxSurface, //equally distributed by level, stop earlier
         (p: point) => ignoreSet.hasNot(p) && getZ(p, true) < level,
-        (p: point) => getZ(p, true) == level
+        (p: point) => getZ(p, true) <= level
     )!;
 
     if (earlyPoint !== undefined) {
@@ -144,7 +144,6 @@ export const collectSurfaceAndBorder = (
     i++;
 
     const currentPoint = open.pop();
-
     if (i > maxSurface) {
       exceeded = true;
       break;
@@ -156,7 +155,8 @@ export const collectSurfaceAndBorder = (
     }
 
 
-    if (isValidSurface(currentPoint)) surface.push(currentPoint);
+    if (isValidSurface(currentPoint))
+      surface.push(currentPoint);
     else {
       border.push(currentPoint);
       continue;

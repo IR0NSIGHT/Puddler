@@ -43,13 +43,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): {river: point[], pon
 
       if (pond.escapePoint !== undefined) {
         ponds.push(pond);
-        //debug
-        const illegal = pond.pondSurface.filter( puddleDebugSet.has);
-        annotateAll(illegal, 14);
-        if (illegal.length > 0)
-          break;
         pond.pondSurface.forEach(puddleDebugSet.add);
-        //debug end
 
         const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
         pathToDrop = [escapeFromPond];
