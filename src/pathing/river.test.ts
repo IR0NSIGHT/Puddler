@@ -112,7 +112,7 @@ describe("river pathing", () => {
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             return x + 62
         }
-        const {river, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet())
+        const {river, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet(), {maxSurface: 1000000})
         expect(river).toBeDefined()
         expect(river).toEqual([
             {"x": 5, "y": 5},
@@ -186,7 +186,7 @@ describe("river pathing", () => {
         }
         const start = {x: 0, y: 0};
 
-        const {river, ponds} = pathRiverFrom(start, makeSet())
+        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
         expect(river).toBeDefined()
         expect(river[0]).toEqual(start)
         expect(river[river.length - 1]).toEqual({x: 8, y: 8})

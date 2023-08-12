@@ -109,6 +109,10 @@ export const collectPuddleLayers = (
   return {layers: surfaceLayers, totalSurface: totalSurface, escapePoint: escapePoint};
 };
 
+
+export type PondGenerationParams = {
+  maxSurface: number,
+}
 /**
  * collect points that are valid surface blocks into the surface list.
  * collect direct neighbours of surface that are not valid surface blocks into the border list.

@@ -61,7 +61,7 @@ const main = () => {
   log("total possible starts: " + startPoints.length);
   const filter = (p: point) => passRandom(p, 1 / blocksPerRiver);
   let rivers = startPoints.filter(filter).map((start) => {
-    return pathRiverFrom(start, allRiverPoints);
+    return pathRiverFrom(start, allRiverPoints, { maxSurface: maxSurface});
   });
 
   const exportTargetPuddle: PuddleExportTarget = {

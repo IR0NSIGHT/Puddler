@@ -2,7 +2,7 @@ import {makeSet, SeenSet} from "../SeenSet";
 import {log} from "../log";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
 import {getZ, isWater, markPos} from "../terrain";
-import {annotateAll, applyPuddleToMap, findPondOutflow} from "../puddle";
+import {annotateAll, applyPuddleToMap, findPondOutflow, PondGenerationParams} from "../puddle";
 
 export const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -20,7 +20,7 @@ export const testIfDownhill = (path: point[]) => {
  * @param pos
  * @param rivers
  */
-export const pathRiverFrom = (pos: point, rivers: SeenSet): {river: point[], ponds: {pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined}[] } => {
+export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGenerationParams): {river: point[], ponds: {pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined}[] } => {
   const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
   let safetyIt = 0;
   let current = pos;
@@ -38,7 +38,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): {river: point[], pon
 
     if (pathToDrop == undefined) {
       //abort if closestDrop coulndt find anything
-      const pond = findPondOutflow([current], 1000000, puddleDebugSet)
+      const pond = findPondOutflow([current], pondParams.maxSurface, puddleDebugSet)
       //applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
 
       if (pond.escapePoint !== undefined) {
