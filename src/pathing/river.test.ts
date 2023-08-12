@@ -57,6 +57,9 @@ describe("river pathing", () => {
             getHighestX: () => 10,
             getHighestY: () => 10,
             getHeightAt: (x: number, y: number) => x,
+            getWaterLevelAt: (x: number, y: number) => -1,
+            setWaterLevelAt: (x: number, y: number, waterLevel: number) => {
+            }
         };
         (global as any).print = (s: string) => console.log(s);
     })
@@ -106,11 +109,18 @@ describe("river pathing", () => {
     })
 
     test("river paths downhill", () => {
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            return x + 62
+        }
+
         const path = pathRiverFrom({x: 5, y: 5}, makeSet())
         expect(path).toBeDefined()
-        expect(path[0]).toEqual({x: 5, y: 5})
-        expect(path.length).toEqual(10)
-        expect(path[9]).toEqual({x: 0, y: 0})
+        expect(path).toEqual([{"x": 5, "y": 5},
+            {"x": 4, "y": 5},
+            {"x": 3, "y": 5},
+            {"x": 2, "y": 5},
+            {"x": 1, "y": 5},
+            {"x": 0, "y": 5}])
     })
 
     test("river escapes simple pond", () => {
