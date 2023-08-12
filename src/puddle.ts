@@ -65,7 +65,7 @@ export const collectPuddleLayers = (
     start: point[],
     maxLayers: number,
     maxSurface: number,
-    ignoreSet: SeenSetReadOnly = makeSet(),
+    ignoreSet: SeenSetReadOnly,
 ): { layers: point[][], totalSurface: number, escapePoint: point | undefined } => {
   let level = getZ(start[0], true);
   const internalSeenSet = makeSet();
@@ -103,13 +103,14 @@ export const collectPuddleLayers = (
 
     //stop if total surface would be exceeded
     if (exceeded || totalSurface + surface.length > maxSurface) {
-      //  log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
-      //  annotateAll(surface, 14)
+       log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
+       annotateAll(surface, 10)
+      markPos(surface[0],10)
       //  surfaceLayers.forEach((layer) => annotateAll(layer, 13))
+
       break;
     }
 
-    //FIXME assert surface is never empty: if unprocessedBorder is not empty(should be impossible) and surface is empty, then the surface collection failed
     surfaceLayers.push(surface);
     surface.forEach(internalSeenSet.add);
     totalSurface += surface.length;

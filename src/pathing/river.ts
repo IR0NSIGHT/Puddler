@@ -1,8 +1,8 @@
 import {makeSet, SeenSet} from "../SeenSet";
 import {log} from "../log";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater} from "../terrain";
-import {applyPuddleToMap, findPondOutflow} from "../puddle";
+import {getZ, isWater, markPos} from "../terrain";
+import {annotateAll, applyPuddleToMap, findPondOutflow} from "../puddle";
 
 const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -26,6 +26,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
   let current = pos;
   let riverMerged = false;
   const thisRiverSet = makeSet();
+  const puddleDebugSet = makeSet();
+
   while (safetyIt < 1000) {
     safetyIt++;
     if (getZ(current, true) < 62) //base water level reached
@@ -35,18 +37,32 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet): point[] => {
 
     if (pathToDrop.length == 0) {
       //abort if closestDrop coulndt find anything
-      const pond = findPondOutflow([current], 10000, makeSet())
+      const pond = findPondOutflow([current], 100000, puddleDebugSet)
+      applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
+
       if (pond.escapePoint !== undefined) {
-        applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
+
+        //debug
+        const illegal = pond.pondSurface.filter( puddleDebugSet.has);
+        annotateAll(illegal, 14);
+        if (illegal.length > 0)
+          break;
+        pond.pondSurface.forEach(puddleDebugSet.add);
+        annotateAll(pond.pondSurface, 12)
+        //debug end
+
+
         pathToDrop = pond.pondSurface.map(p => ({point: p, parent: path[path.length - 1], distance: -1}))
         //FIXME pond filling can happen backwards, trying to fill already filled ponds.
         // currently there is no record keeping of which blocks to ignore for pond-escape point search!
         const escapeFromPond: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
         pathToDrop.push(escapeFromPond);
       } else {
+        markPos(current, 14)
         break;
       }
     }
+
 
 
     //add found path to riverpoint list, until water/river is reached
