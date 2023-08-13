@@ -1,5 +1,5 @@
 import {makeQueue, queue} from "./PointQueue";
-import {makeSet, SeenSet, SeenSetReadOnly} from "./SeenSet";
+import {makeSet, SeenSetReadOnly} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
 import {floodToLevel, getZ, markPos} from "./terrain";
 import {log} from "./log";
@@ -9,6 +9,7 @@ export type PuddleExportTarget = {
   annotationColor: number | undefined
 }
 
+export type Puddle = { pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined }
 
 export const annotateAll = (points: point[], annotationColor: number) => {
   points.forEach((p: point) => {
@@ -32,12 +33,7 @@ export const applyPuddleToMap = (puddleSurface: point[], waterLevel: number, tar
  * @param ignoreAsEscape ignore these points trying to escape. will still be part of surface.
  * @returns true if river is finishing in pond or existing waterbody
  */
-export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreAsEscape: SeenSetReadOnly): {
-  pondSurface: point[],
-  waterLevel: number,
-  depth: number,
-  escapePoint: point | undefined
-} => {
+export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreAsEscape: SeenSetReadOnly): Puddle => {
   const {layers, escapePoint} = collectPuddleLayers(startPos,  maxSurface, ignoreAsEscape);
 
   const surfacePoints: point[] = []

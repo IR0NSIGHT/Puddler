@@ -3,7 +3,7 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {applyPuddleToMap, PuddleExportTarget} from "./puddle";
+import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
 import {capRiverStart, pathRiverFrom} from "./pathing/river";
 
 
@@ -88,8 +88,36 @@ const main = () => {
 
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
 
-  longRivers.forEach(r => applyRiverToTerrain(r.river, exportTargetRiver));
-  longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
+  const globalPonds = makeSet();
+  longRivers.forEach(
+      r => r.ponds.forEach
+      (p => p.pondSurface.forEach(globalPonds.add)));
+
+  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
+  //longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
+
+  let allPonds: Puddle[] = [];
+  longRivers.map(r => r.ponds)
+      .forEach(p => allPonds.push(...p))
+  allPonds.sort((a, b) => b.pondSurface.length - a.pondSurface.length)
+
+  const processedPondSurface = makeSet()
+  for (let pond of allPonds) {
+    //find out if this pond is embedded in another pond
+    let embeddedPond = false;
+    for (let surfacePoint of pond.pondSurface) {
+      if (processedPondSurface.has(surfacePoint)) {
+        embeddedPond = true
+        break;
+      }
+    }
+    if (embeddedPond)
+      continue;
+
+    pond.pondSurface.forEach(processedPondSurface.add)
+    applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle)
+  }
+
   let totalLength = 0;
   longRivers.forEach((r) => (totalLength += r.river.length));
   //collect puddles
