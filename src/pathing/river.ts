@@ -1,7 +1,7 @@
 import {makeSet, SeenSet} from "../SeenSet";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater} from "../terrain";
-import {findPondOutflow, PondGenerationParams} from "../puddle";
+import {getZ, isWater, markPos} from "../terrain";
+import {annotateAll, findPondOutflow, PondGenerationParams} from "../puddle";
 import {log} from "../log";
 
 export const testIfDownhill = (path: point[]) => {
@@ -46,9 +46,8 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
       //abort if closestDrop coulndt find anything
       const pond = findPondOutflow([current], pondParams.maxSurface, puddleDebugSet)
       //applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
-
+      ponds.push(pond);
       if (pond.escapePoint !== undefined) {
-        ponds.push(pond);
         pond.pondSurface.forEach(puddleDebugSet.add);
 
         const escapePoint: parentedPoint = {point: pond.escapePoint!, parent: path[path.length - 1], distance: -1}
@@ -70,6 +69,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         pathToDrop.shift(); //remove connectionpoint on pond surface
         pathToDrop.push(escapePoint);
       } else {
+        log("could not find pond escape point, pond surface: " + pond.pondSurface.length + " waterlevel: " + pond.waterLevel + " depth: " + pond.depth)
         break;
       }
     }
