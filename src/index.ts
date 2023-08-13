@@ -37,14 +37,40 @@ const main = () => {
     return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
   };
 
-  for (let x = dims.start.x; x < dims.end.x; x++) {
-    for (let y = dims.start.y; y < dims.end.y; y++) {
-      const point = { x: x, y: y };
-      if (isCyanAnnotated(point)) {
-        startPoints.push(point);
-      }
+  type Tile = any
+  const TILE_SIZE_BITS = 7;
+  const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
+
+  //collect all tiles
+  const tiles: Tile[] = []
+  for (let x = dims.start.x>>TILE_SIZE_BITS; x < dims.end.x>>TILE_SIZE_BITS; x++) {
+    for (let y = dims.start.y>>TILE_SIZE_BITS; y < dims.end.y>>TILE_SIZE_BITS; y++) {
+      tiles.push(dimension.getTile(x, y))
     }
   }
+
+
+  const annotatedTiles = tiles.filter((t) => t.hasLayer(annotations))
+      .map(tile => {
+        const start: point = {x: (tile.getX() << TILE_SIZE_BITS), y: (tile.y << TILE_SIZE_BITS)};
+        return {
+          start: start,
+          end: {x: start.x + SHIFT_AMOUNT, y: start.y + SHIFT_AMOUNT},
+        }
+      })
+  log("annotated tiles: " + annotatedTiles.length);
+  annotatedTiles.forEach((tile) => {
+        for (let x = tile.start.x; x < tile.end.x; x++) {
+          for (let y = tile.start.y; y < tile.end.y; y++) {
+            const point = {x: x, y: y};
+            if (isCyanAnnotated(point)) {
+              startPoints.push(point);
+            }
+          }
+        }
+      }
+  );
+
 
   const passRandom = (p: point, chance: number): boolean => {
     const seed = p.x * p.y + p.x;
