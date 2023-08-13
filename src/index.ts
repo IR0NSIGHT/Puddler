@@ -3,24 +3,21 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {capRiverWithPond, PuddleExportTarget} from "./puddle";
-import {capRiverStart, pathRiverFrom} from "./river";
+import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
+import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
+
 
 const main = () => {
   const {
     maxSurface,
-    minDepth,
     minRiverLength,
     blocksPerRiver,
     floodPuddles,
     applyRivers,
-    exportRiverToAnnotation,
-    exportRiverWaterDepth,
-    exportRiverTerrainDepth,
-    exportPuddleToAnnotation
+    annotateAll
   } = params;
 
-  if (!floodPuddles && !applyRivers && exportRiverToAnnotation < 0 && exportPuddleToAnnotation < 0) {
+  if (!floodPuddles && !applyRivers && !annotateAll) {
     log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
     return;
   }
@@ -36,14 +33,40 @@ const main = () => {
     return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
   };
 
-  for (let x = dims.start.x; x < dims.end.x; x++) {
-    for (let y = dims.start.y; y < dims.end.y; y++) {
-      const point = { x: x, y: y };
-      if (isCyanAnnotated(point)) {
-        startPoints.push(point);
-      }
+  type Tile = any
+  const TILE_SIZE_BITS = 7;
+  const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
+
+  //collect all tiles
+  const tiles: Tile[] = []
+  for (let x = dims.start.x>>TILE_SIZE_BITS; x < dims.end.x>>TILE_SIZE_BITS; x++) {
+    for (let y = dims.start.y>>TILE_SIZE_BITS; y < dims.end.y>>TILE_SIZE_BITS; y++) {
+      tiles.push(dimension.getTile(x, y))
     }
   }
+
+
+  const annotatedTiles = tiles.filter((t) => t.hasLayer(annotations))
+      .map(tile => {
+        const start: point = {x: (tile.getX() << TILE_SIZE_BITS), y: (tile.y << TILE_SIZE_BITS)};
+        return {
+          start: start,
+          end: {x: start.x + SHIFT_AMOUNT, y: start.y + SHIFT_AMOUNT},
+        }
+      })
+  log("annotated tiles: " + annotatedTiles.length);
+  annotatedTiles.forEach((tile) => {
+        for (let x = tile.start.x; x < tile.end.x; x++) {
+          for (let y = tile.start.y; y < tile.end.y; y++) {
+            const point = {x: x, y: y};
+            if (isCyanAnnotated(point)) {
+              startPoints.push(point);
+            }
+          }
+        }
+      }
+  );
+
 
   const passRandom = (p: point, chance: number): boolean => {
     const seed = p.x * p.y + p.x;
@@ -60,34 +83,63 @@ const main = () => {
   log("total possible starts: " + startPoints.length);
   const filter = (p: point) => passRandom(p, 1 / blocksPerRiver);
   let rivers = startPoints.filter(filter).map((start) => {
-    return pathRiverFrom(start, allRiverPoints);
+    return pathRiverFrom(start, allRiverPoints, { maxSurface: maxSurface});
   });
 
   const exportTargetPuddle: PuddleExportTarget = {
-    annotationColor: (params.exportPuddleToAnnotation < 0) ? undefined : params.exportPuddleToAnnotation,
+    annotationColor: !annotateAll ? undefined : annotationColor.PURPLE,
     flood: floodPuddles,
   }
   const exportTargetRiver: RiverExportTarget = {
-    annotationColor: (params.exportRiverToAnnotation < 0) ? undefined : params.exportRiverToAnnotation,
-    terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : params.exportRiverTerrainDepth,
-    waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : params.exportRiverWaterDepth,
+    annotationColor:  !annotateAll ? undefined : annotationColor.ORANGE,
     applyRivers: applyRivers
   }
 
   const longRivers = rivers
-      .map((a) => capRiverStart(a, 10))
-      .filter((r) => r.length > minRiverLength);
+      .map((a) => ({
+        ...a,
+        river: capRiverStart(a.river, 10)
+      }))
+      .filter((r) => r.river.length > minRiverLength)
+
 
   log("export target river: " + JSON.stringify(exportTargetRiver));
-  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver));
+
 
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
-  rivers.forEach((riverPath) => {
-    capRiverWithPond(riverPath, maxSurface, minDepth, exportTargetPuddle);
-  });
+
+  const globalPonds = makeSet();
+  longRivers.forEach(
+      r => r.ponds.forEach
+      (p => p.pondSurface.forEach(globalPonds.add)));
+
+  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
+  //longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
+
+  let allPonds: Puddle[] = [];
+  longRivers.map(r => r.ponds)
+      .forEach(p => allPonds.push(...p))
+  allPonds.sort((a, b) => b.pondSurface.length - a.pondSurface.length)
+
+  const processedPondSurface = makeSet()
+  for (let pond of allPonds) {
+    //find out if this pond is embedded in another pond
+    let embeddedPond = false;
+    for (let surfacePoint of pond.pondSurface) {
+      if (processedPondSurface.has(surfacePoint)) {
+        embeddedPond = true
+        break;
+      }
+    }
+    if (embeddedPond)
+      continue;
+
+    pond.pondSurface.forEach(processedPondSurface.add)
+    applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle)
+  }
 
   let totalLength = 0;
-  longRivers.forEach((r) => (totalLength += r.length));
+  longRivers.forEach((r) => (totalLength += r.river.length));
   //collect puddles
   log(
       "script too =" +

@@ -3,52 +3,43 @@
 //script.param.maxSurface.type=integer
 //script.param.maxSurface.description=maximum surface area of ponds
 //script.param.maxSurface.optional=false
-//script.param.maxSurface.default=500
-
-//script.param.minDepth.type=integer
-//script.param.minDepth.description=minimal depth of ponds
-//script.param.minDepth.optional=false
-//script.param.minDepth.default=2
+//script.param.maxSurface.default=10000
+//script.param.maxSurface.displayName=Max Puddle Surface
 
 //script.param.minRiverLength.type=integer
-//script.param.minRiverLength.description=minimal length of river
+//script.param.minRiverLength.description=minimal length of river in blocks
 //script.param.minRiverLength.optional=false
 //script.param.minRiverLength.default=50
+//script.param.minRiverLength.displayName=Minimal River Length
 
 //script.param.blocksPerRiver.type=integer
-//script.param.blocksPerRiver.description=one river every x blocks
+//script.param.blocksPerRiver.description=spawn one river every x blocks
 //script.param.blocksPerRiver.optional=false
-//script.param.blocksPerRiver.default=100
+//script.param.blocksPerRiver.default=1000
+//script.param.blocksPerRiver.displayName=Spawn Probability
 
 
 //script.param.floodPuddles.type=boolean
-//script.param.floodPuddles.description=generate puddles on map.
+//script.param.floodPuddles.description=flood ponds with water on map.
 //script.param.floodPuddles.optional=false
-//script.param.floodPuddles.default=true
+//script.param.floodPuddles.default=false
+//script.param.floodPuddles.displayName=Flood Puddles
+
 
 //script.param.applyRivers.type=boolean
-//script.param.applyRivers.description=generate rivers on map.
+//script.param.applyRivers.description=generate rivers as water on map.
 //script.param.applyRivers.optional=false
-//script.param.applyRivers.default=true
+//script.param.applyRivers.default=false
+//script.param.applyRivers.displayName=Apply Rivers
 
-//script.param.exportRiverToAnnotation.type=integer
-//script.param.exportRiverToAnnotation.description=Annotation color to export rivers to. -1 to disable.
-//script.param.exportRiverToAnnotation.optional=false
-//script.param.exportRiverToAnnotation.default=-1
+//script.param.annotateAll.type=boolean
+//script.param.annotateAll.description=use annotations instead of water for river and puddle
+//script.param.annotateAll.optional=false
+//script.param.annotateAll.default=true
+//script.param.annotateAll.displayName=Apply as Annotations
 
-//script.param.exportPuddleToAnnotation.type=integer
-//script.param.exportPuddleToAnnotation.description=Annotation color to export puddles to. -1 to disable.
-//script.param.exportPuddleToAnnotation.optional=false
-//script.param.exportPuddleToAnnotation.default=-1
-
-
-
-//script.param.exportRiverWaterDepth.type=integer
-//script.param.exportRiverWaterDepth.description=Depth below original terrain level to export waterlevel to. -1 to disable.
-//script.param.exportRiverWaterDepth.optional=false
-//script.param.exportRiverWaterDepth.default=0
-
-//script.param.exportRiverTerrainDepth.type=integer
-//script.param.exportRiverTerrainDepth.description=Depth below original terrain level to export river bottom to. Should be higher than waterDepth to have effect -1 to disable.
-//script.param.exportRiverTerrainDepth.optional=false
-//script.param.exportRiverTerrainDepth.default=1
+//script.param.waterLevel.type=integer
+//script.param.waterLevel.description=Water level of ocean. rivers will stop if they fall below that level
+//script.param.waterLevel.optional=false
+//script.param.waterLevel.default=62
+//script.param.waterLevel.displayName=Ocean Water Level

@@ -6,6 +6,9 @@ export type SeenSet = {
   hasNot: (p: Point) => boolean;
 };
 
+export type SeenSetReadOnly = Omit<SeenSet,"add">
+
+
 export const makeSet = (): SeenSet => {
   //@ts-ignore
   const seenSet: any = new java.util.HashSet<string>();

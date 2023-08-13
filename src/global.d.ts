@@ -5,14 +5,11 @@ declare const dimension: import('./worldpainterStubs/typescript/Dimension').Dime
 declare const org: any; //org.pepsoft java package
 declare const params: {
   maxSurface: number;
-  minDepth: number;
   minRiverLength: number;
   blocksPerRiver: number;
   floodPuddles: boolean;
   applyRivers: boolean;
-  exportRiverToAnnotation: number;
-  exportRiverWaterDepth: number;
-  exportRiverTerrainDepth: number;
-
-  exportPuddleToAnnotation: number;
+  annotateAll: boolean;
+  waterLevel: number;
 };
+
