@@ -54,8 +54,8 @@ describe("river pathing", () => {
         (global as any).dimension = {
             getLowestX: () => 0,
             getLowestY: () => 0,
-            getHighestX: () => 10,
-            getHighestY: () => 10,
+            getHighestX: () => 20,
+            getHighestY: () => 20,
             getHeightAt: (x: number, y: number) => x,
             getWaterLevelAt: (x: number, y: number) => -1,
             setWaterLevelAt: (x: number, y: number, waterLevel: number) => {
@@ -233,6 +233,32 @@ describe("river pathing", () => {
             {x: 2, y: 5},
             {x: 1, y: 5},
             {x: 0, y: 5} //escape point
+        ])
+    })
+
+    test("regression: river was unable to path to escape point", () => {
+        //build after a real life map where i encountered the bug
+        //mock: area is flat, starts in drop
+        (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 10 && y == 5) return 88;
+            if (x <= 5) return 88; //dropout
+            return 89
+        }
+        const start = {x: 15, y: 5};
+
+        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
+        expect(river).toEqual([
+            {x: 15, y: 5},
+            {x: 14, y: 5},
+            {x: 13, y: 5},
+            {x: 12, y: 5},
+            {x: 11, y: 5},
+            {x: 10, y: 5}, //pond bottom
+            {x: 9, y: 5},
+            {x: 8, y: 5},
+            {x: 7, y: 5},
+            {x: 6, y: 5},
+            {x: 5, y: 5}, //escape point
         ])
     })
 })

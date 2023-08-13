@@ -88,8 +88,8 @@ export const collectPuddleLayers = (
     //stop if total surface would be exceeded
     if (exceeded || totalSurface + surface.length > maxSurface) {
        log(`total surface exceeded at additional ${surface.length} + existing ${totalSurface}, stop collecting layers`);
-       annotateAll(surface, 10)
-      markPos(surface[0],10)
+      // annotateAll(surface, 10)
+      //markPos(surface[0],10)
       //  surfaceLayers.forEach((layer) => annotateAll(layer, 13))
 
       break;

@@ -1,7 +1,8 @@
 import {makeSet, SeenSet} from "../SeenSet";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater} from "../terrain";
+import {getZ, isWater, markPos} from "../terrain";
 import {findPondOutflow, PondGenerationParams} from "../puddle";
+import {log} from "../log";
 
 export const testIfDownhill = (path: point[]) => {
   for (let i = 0; i < path.length - 1; i++) {
@@ -12,7 +13,12 @@ export const testIfDownhill = (path: point[]) => {
   }
   return true;
 }
-
+export const annotationColor = {
+  PURPLE: 10,
+  ORANGE: 2,
+  YELLOW: 5,
+  RED: 14
+};
 
 /**
  * start a new river path at this position
@@ -50,15 +56,20 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         const thisPond = makeSet();
         pond.pondSurface.forEach(thisPond.add);
         //connect pond to escape
-        const pathEscapeToPond = findClosestDrop(current,
-            getZ(current),
-            (p) => p.x == escapePoint.point.x && p.y == escapePoint.point.y,
-            (p) => true
+        const pathEscapeToPond = findClosestDrop(
+            escapePoint.point,
+            pond.waterLevel,
+            (p) => thisPond.has(p), //we found a connection to the pond surface!
         )
         if (pathEscapeToPond == undefined) {
+        //  markPos(current, annotationColor.RED)
+        //  markPos(escapePoint.point, annotationColor.YELLOW)
+          log("couldnt find path to escape point: " + JSON.stringify(escapePoint.point))
           break;
         }
-        pathToDrop = pathEscapeToPond;
+        pathToDrop = pathEscapeToPond.reverse();
+        pathToDrop.shift(); //remove connectionpoint on pond surface
+        pathToDrop.push(escapePoint);
       } else {
         break;
       }
@@ -133,7 +144,7 @@ export function findClosestDrop(
   let safetyIterator = 0;
   let searchCenter: point = startingPoint
 
-  while (queue.length != 0 && safetyIterator < 10000) {
+  while (queue.length != 0 && safetyIterator < 50000) {
     next = queue.shift() as parentedPoint;
 
     if (isDrop(next.point)) {
