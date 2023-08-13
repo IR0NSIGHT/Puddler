@@ -1,6 +1,6 @@
 import {makeSet, SeenSet} from "../SeenSet";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater, markPos} from "../terrain";
+import {getZ, isWater} from "../terrain";
 import {findPondOutflow, PondGenerationParams} from "../puddle";
 import {log} from "../log";
 
@@ -60,11 +60,10 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
             escapePoint.point,
             pond.waterLevel,
             (p) => thisPond.has(p), //we found a connection to the pond surface!
+            (p: point) => getZ(p, true) <= pond.waterLevel
         )
         if (pathEscapeToPond == undefined) {
-        //  markPos(current, annotationColor.RED)
-        //  markPos(escapePoint.point, annotationColor.YELLOW)
-          log("couldnt find path to escape point: " + JSON.stringify(escapePoint.point))
+          log("ERROR: couldnt find path to escape point: " + JSON.stringify(escapePoint.point))
           break;
         }
         pathToDrop = pathEscapeToPond.reverse();
@@ -133,7 +132,7 @@ export function findClosestDrop(
     startingPoint: point,
     posZ: number,
     isDrop: (p: point) => boolean = (p) => getZ(next.point, true) < Math.round(posZ),
-    isValidNeighbour: (p: point) => boolean = (p) => getZ(p, false) <= posZ
+    isValidNeighbour: (p: point) => boolean = (p) => getZ(p, true) <= posZ
 ): parentedPoint[]|undefined {
   const seenSet: SeenSet = makeSet();
 
@@ -146,7 +145,6 @@ export function findClosestDrop(
 
   while (queue.length != 0 && safetyIterator < 50000) {
     next = queue.shift() as parentedPoint;
-
     if (isDrop(next.point)) {
       const path = parentedToList(next, []).reverse();
       //path starts with startingPoint, which is not wanted

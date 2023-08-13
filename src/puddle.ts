@@ -3,6 +3,7 @@ import {makeSet, SeenSetReadOnly} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
 import {floodToLevel, getZ, markPos} from "./terrain";
 import {log} from "./log";
+import {annotationColor} from "./pathing/river";
 
 export type PuddleExportTarget = {
   flood: boolean,
@@ -34,10 +35,11 @@ export const applyPuddleToMap = (puddleSurface: point[], waterLevel: number, tar
  * @returns true if river is finishing in pond or existing waterbody
  */
 export const findPondOutflow = (startPos: point[], maxSurface: number, ignoreAsEscape: SeenSetReadOnly): Puddle => {
-  const {layers, escapePoint} = collectPuddleLayers(startPos,  maxSurface, ignoreAsEscape);
+  const {layers, escapePoint} = collectPuddleLayers(startPos, maxSurface, ignoreAsEscape);
 
   const surfacePoints: point[] = []
   layers.forEach((layer) => surfacePoints.push(...layer));
+
   return {
     pondSurface: surfacePoints,
     waterLevel: getZ(startPos[0], true) + layers.length,
@@ -58,6 +60,9 @@ export const collectPuddleLayers = (
     maxSurface: number,
     ignoreSet: SeenSetReadOnly,
 ): { layers: point[][], totalSurface: number, escapePoint: point | undefined } => {
+  if (start.length == 0)
+    throw new Error("collectPuddleLayers: start array is empty");
+
   let level = getZ(start[0], true);
   const internalSeenSet = makeSet();
   //iterators

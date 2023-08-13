@@ -1,7 +1,7 @@
 import {point} from "./point";
 import {annotateAll} from "./puddle";
 
-export function getZ(pos: point, round?: boolean): number {
+export function getZ(pos: point, round: boolean = true): number {
   const z = dimension.getHeightAt(pos.x, pos.y);
   return round ? Math.round(z) : z;
 }
