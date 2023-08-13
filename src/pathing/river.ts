@@ -18,6 +18,7 @@ export const testIfDownhill = (path: point[]) => {
  * start a new river path at this position
  * @param pos
  * @param rivers
+ * @param pondParams
  */
 export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGenerationParams): {river: point[], ponds: {pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined}[] } => {
   const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
@@ -93,6 +94,7 @@ export const squaredDistanceBetweenPoints = (a: point, b: point) => {
     return diff.x*diff.x + diff.y*diff.y;
 }
 
+
 export const insertInSortedQueue = (sortedQueue: parentedPoint[], point: parentedPoint): void => {
     let i = 0;
     for (let iteratorPoint of sortedQueue) {
@@ -164,8 +166,3 @@ export function findClosestDrop(
 export const capRiverStart = (river: point[], slice: number) => {
   return river.slice(slice);
 };
-
-
-export const getZWrapper = (pos: point, floor: boolean): number => {
-  return getZ(pos, floor);
-}
