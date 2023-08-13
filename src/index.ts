@@ -4,24 +4,20 @@ import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
 import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
-import {capRiverStart, pathRiverFrom} from "./pathing/river";
+import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
 
 
 const main = () => {
   const {
     maxSurface,
-    minDepth,
     minRiverLength,
     blocksPerRiver,
     floodPuddles,
     applyRivers,
-    exportRiverToAnnotation,
-    exportRiverWaterDepth,
-    exportRiverTerrainDepth,
-    exportPuddleToAnnotation
+    annotateAll
   } = params;
 
-  if (!floodPuddles && !applyRivers && exportRiverToAnnotation < 0 && exportPuddleToAnnotation < 0) {
+  if (!floodPuddles && !applyRivers && !annotateAll) {
     log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
     return;
   }
@@ -91,13 +87,11 @@ const main = () => {
   });
 
   const exportTargetPuddle: PuddleExportTarget = {
-    annotationColor: (params.exportPuddleToAnnotation < 0) ? undefined : params.exportPuddleToAnnotation,
+    annotationColor: !annotateAll ? undefined : annotationColor.PURPLE,
     flood: floodPuddles,
   }
   const exportTargetRiver: RiverExportTarget = {
-    annotationColor: (params.exportRiverToAnnotation < 0) ? undefined : params.exportRiverToAnnotation,
-    terrainDepth: (params.exportRiverTerrainDepth < 0) ? undefined : params.exportRiverTerrainDepth,
-    waterlevel: (params.exportRiverWaterDepth < 0) ? undefined : params.exportRiverWaterDepth,
+    annotationColor:  !annotateAll ? undefined : annotationColor.ORANGE,
     applyRivers: applyRivers
   }
 

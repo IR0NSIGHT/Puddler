@@ -62,6 +62,9 @@ describe("river pathing", () => {
             }
         };
         (global as any).print = (s: string) => console.log(s);
+        (global as any).params = {
+            waterLevel: 62,
+        }
     })
 
     afterEach(() => {
@@ -108,10 +111,13 @@ describe("river pathing", () => {
         expect(path).toBeUndefined();
     })
 
-    test("river paths downhill", () => {
+    test("river paths downhill and stops at waterlevel", () => {
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
+            if (x == 0)
+                return 61;  //terrain is one below waterlevel => is ocean
             return x + 62
         }
+        (global as any).params.waterLevel = 62;
         const {river, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet(), {maxSurface: 1000000})
         expect(river).toBeDefined()
         expect(river).toEqual([
@@ -121,7 +127,7 @@ describe("river pathing", () => {
             {"x": 2, "y": 5},
             {"x": 1, "y": 5},
             {"x": 0, "y": 5}])
-        expect(ponds).toEqual([])
+        expect(ponds.length).toEqual(0)
     })
 
     test("findPondOutflow escapes simple pond", () => {

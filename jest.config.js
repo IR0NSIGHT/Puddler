@@ -1,6 +1,6 @@
 module.exports = {
     preset: 'ts-jest',
-    verbose: true,
+  //  verbose: true,
     testEnvironment: 'node',
     // ... other Jest configuration options
     collectCoverage: true,

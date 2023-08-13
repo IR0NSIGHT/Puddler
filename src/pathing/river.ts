@@ -37,7 +37,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
 
   while (safetyIt < 1000) {
     safetyIt++;
-    if (getZ(current, true) < 62) //base water level reached
+    if (getZ(current) < params.waterLevel) //base water level reached
         break;
 
     let pathToDrop = findClosestDrop(current, getZ(current));
@@ -69,7 +69,6 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         pathToDrop.shift(); //remove connectionpoint on pond surface
         pathToDrop.push(escapePoint);
       } else {
-        log("could not find pond escape point, pond surface: " + pond.pondSurface.length + " waterlevel: " + pond.waterLevel + " depth: " + pond.depth)
         break;
       }
     }
