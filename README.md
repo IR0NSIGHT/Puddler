@@ -26,6 +26,9 @@ github: https://github.com/IR0NSIGHT/Puddler
 10. Run the script a final time with "flood Puddles" and "apply Rivers" checked to apply water
 11. Export the map to minecraft
 
+## Example Video
+https://youtu.be/kUJXZ7FjP7Y
+
 ## Parameters
 - Max Puddle Surface: Lakes will stop growing if they reach this surface area and will not overflow and spawn new rivers.
     Smaller value: smaller lakes, rivers might not reach ocean
