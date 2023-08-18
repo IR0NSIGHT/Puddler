@@ -7,8 +7,6 @@ import {annotationColor} from "./river";
 /**
  * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
  * @param p
- * @param i
- * @param river point array that flows from high to low
  * @returns river with z values
  */
 export const minFilter = (
