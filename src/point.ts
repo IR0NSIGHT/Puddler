@@ -53,7 +53,7 @@ export function getNeighbourPoints(pos: point): point[] {
 export const withZ = (p: point): point & { z: number } => ({
   x: p.x,
   y: p.y,
-  z: getZ(p, true),
+  z: getZ(p),
 });
 
 export const mapDimensions = (): { start: point; end: point } => {
