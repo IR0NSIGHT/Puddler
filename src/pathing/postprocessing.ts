@@ -2,7 +2,6 @@ import {getNeighbourPoints, point} from "../point";
 import {getZ} from "../terrain";
 import {collectLayers} from "./riverLayer";
 import {annotateAll} from "../puddle";
-import {annotationColor} from "./river";
 
 /**
  * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
@@ -20,7 +19,12 @@ export const minFilter = (
     };
 };
 
-export const applyRiverOutline = (river: point[]) : void => {
-    const outline = collectLayers(river, 1)[1]
-    annotateAll(outline, annotationColor.YELLOW)
+export const applyRiverOutline = (river: point[]): void => {
+    const outlines = collectLayers(river, 4)
+    let i = 0
+    outlines.forEach(outline => {
+            annotateAll(outline, 3 + i);
+            i += 1;
+        }
+    )
 }

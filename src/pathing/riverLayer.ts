@@ -14,6 +14,7 @@ export const collectLayers = (river: point[], iterations: number): layer[] => {
         const layer = collectOneLayer(origins, origins, ignoreAsNeighbour)
         layer.forEach(ignoreAsNeighbour.add)
         layers.push(layer)
+        origins = layer //set new start points
     }
 
     return layers
