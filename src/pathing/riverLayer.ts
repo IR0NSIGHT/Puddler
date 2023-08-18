@@ -30,7 +30,7 @@ export const collectOneLayer = (origins: layerPoint[], parents: layerPoint[], in
             .filter(nsSet.hasNot)
             .filter(originsSet.hasNot)
             .filter(invalidNeighbours.hasNot)
-            .map(n => ({...withZ(n), parent: findParent(p, parents)}))
+            .map(n => ({...withZ(n), parent: findParent(n, parents)}))
         neighbours.push(...ns)
         ns.forEach(nsSet.add)
     })
@@ -51,20 +51,29 @@ const findParent = (p: point, list: layerPoint[]): layerPoint => {
 /**
  * get index of closest point.
  * if not point is closer than initial distance, return -1
- * @param p
+ * if two points are equally close, return the one with a lower z value
+ * if two points are equally close and have the same z value, return the one with the lowest index
+ * @param origin
  * @param list
  * @independent
  */
-export const findClosestIndex = (p: point, list: point[]): number => {
-    let closest = -1
-    let closestDist = 1000000000
-    for (let i = 0; i < list.length; i++) {
-        const candidate = list[i]
-        const candidateDist = squaredDistance(candidate, p)
-        if (candidateDist < closestDist) {
-            closestDist = candidateDist
-            closest = i
+export const findClosestIndex = (origin: point, list: zPoint[]): number => {
+    const candidates = list.map((candidate, i) => (
+        {point: candidate, idx: i, distance: squaredDistance(candidate, origin)}
+    ))
+    let chosen: {point: zPoint, idx: number, distance: number}|undefined = undefined;
+    candidates.forEach(candidate => {
+        if (chosen === undefined) {
+            chosen = candidate
         }
-    }
-    return closest!
+        if (candidate.distance == chosen.distance && candidate.point.z < chosen.point.z) {
+            chosen = candidate
+        }
+        if (candidate.distance < chosen.distance) {
+            chosen = candidate
+        }
+    })
+
+
+    return chosen!.idx
 }

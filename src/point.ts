@@ -107,6 +107,12 @@ export const pointLowerThan = (pos: point, z: number) => {
     return getZ(pos, true) < z;
 };
 
+/**
+ *
+ * @param a
+ * @param b
+ * @independent
+ */
 export const squaredDistance = (a: point, b: point): number => {
     const x = a.x - b.x
     const y = a.y - b.y
