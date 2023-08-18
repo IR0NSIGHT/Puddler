@@ -3,28 +3,34 @@ import {makeSet, SeenSetReadOnly} from "../SeenSet";
 
 type layerPoint = zPoint & { parent: layerPoint | undefined }
 type layer = layerPoint[]
-const collectLayers = (river: point[], iterations: number): layer[] => {
-    const seen = makeSet()
+export const collectLayers = (river: point[], iterations: number): layer[] => {
+    const ignoreAsNeighbour = makeSet()
     const layers: layer[] = []
     const firstLayer: layer = river.map(p => ({...withZ(p), parent: undefined}))
     layers.push(firstLayer)
 
     let origins: layer = firstLayer;
     for (let i = 0; i < iterations; i++) {
-        const layer = collectOneLayer(origins, origins, seen)
-        layer.forEach(seen.add)
+        const layer = collectOneLayer(origins, origins, ignoreAsNeighbour)
+        layer.forEach(ignoreAsNeighbour.add)
     }
 
     return layers
 }
 
-const collectOneLayer = (origins: layerPoint[], parents: layerPoint[], invalidNeighbours: SeenSetReadOnly): layer => {
+export const collectOneLayer = (origins: layerPoint[], parents: layerPoint[], invalidNeighbours: SeenSetReadOnly): layer => {
+    const originsSet = makeSet()
+    const nsSet = makeSet()
+    origins.forEach(originsSet.add)
     const neighbours: layerPoint[] = []
     origins.forEach(p => {
         const ns = getNeighbourPointsDiagonal(p)
+            .filter(nsSet.hasNot)
+            .filter(originsSet.hasNot)
             .filter(invalidNeighbours.hasNot)
             .map(n => ({...withZ(n), parent: findParent(p, parents)}))
         neighbours.push(...ns)
+        ns.forEach(nsSet.add)
     })
     return neighbours
 }

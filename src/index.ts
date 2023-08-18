@@ -5,6 +5,7 @@ import {log} from "./log";
 import {mapDimensions, point} from "./point";
 import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
 import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
+import {applyRiverOutline} from "./pathing/postprocessing";
 
 
 const main = () => {
@@ -137,6 +138,12 @@ const main = () => {
     pond.pondSurface.forEach(processedPondSurface.add)
     applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle)
   }
+
+
+  // DEBUG
+  longRivers.map(r => r.river).forEach(applyRiverOutline)
+  // !DEBUG
+
 
   let totalLength = 0;
   longRivers.forEach((r) => (totalLength += r.river.length));
