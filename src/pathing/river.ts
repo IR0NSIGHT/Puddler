@@ -1,5 +1,12 @@
 import {makeSet, SeenSet} from "../SeenSet";
-import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
+import {
+  addPoints,
+  getNeighbourPoints,
+  getNeighbourPointsDiagonal,
+  parentedPoint,
+  parentedToList,
+  point,
+} from "../point";
 import {getZ, isWater} from "../terrain";
 import {findPondOutflow, PondGenerationParams} from "../puddle";
 import {log} from "../log";
