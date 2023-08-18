@@ -1,7 +1,7 @@
 import {makeSet, SeenSet} from "../SeenSet";
 import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} from "../point";
-import {getZ, isWater, markPos} from "../terrain";
-import {annotateAll, findPondOutflow, PondGenerationParams} from "../puddle";
+import {getZ, isWater} from "../terrain";
+import {findPondOutflow, PondGenerationParams} from "../puddle";
 import {log} from "../log";
 
 export const testIfDownhill = (path: point[]) => {
@@ -130,7 +130,7 @@ export const averagePoint = (points: point[]): point => {
 export function findClosestDrop(
     startingPoint: point,
     posZ: number,
-    isDrop: (p: point) => boolean = (p) => getZ(next.point, true) < Math.round(posZ),
+    isDrop: (p: point) => boolean = (p) => getZ(p, true) < Math.round(posZ),
     isValidNeighbour: (p: point) => boolean = (p) => getZ(p, true) <= posZ
 ): parentedPoint[]|undefined {
   const seenSet: SeenSet = makeSet();
