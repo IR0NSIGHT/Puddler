@@ -23,6 +23,6 @@ export const minFilter = (
 };
 
 export const applyRiverOutline = (river: point[]) : void => {
-    const outline = collectLayers(river, 1)[0]
+    const outline = collectLayers(river, 1)[1]
     annotateAll(outline, annotationColor.YELLOW)
 }

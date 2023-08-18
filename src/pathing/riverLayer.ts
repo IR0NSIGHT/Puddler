@@ -13,6 +13,7 @@ export const collectLayers = (river: point[], iterations: number): layer[] => {
     for (let i = 0; i < iterations; i++) {
         const layer = collectOneLayer(origins, origins, ignoreAsNeighbour)
         layer.forEach(ignoreAsNeighbour.add)
+        layers.push(layer)
     }
 
     return layers
