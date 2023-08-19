@@ -3,10 +3,9 @@ import {timer} from "./Timer";
 import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
+import {annotateAll as annotateAllPoints, applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
 import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
 import {applyRiverOutline} from "./pathing/postprocessing";
-
 
 const main = () => {
   params.floodPuddles = true; //FIXME DEBUG
@@ -113,13 +112,17 @@ const main = () => {
 
   const globalPonds = makeSet();
   longRivers.forEach(
-      r => r.ponds.forEach
-      (p => p.pondSurface.forEach(globalPonds.add)));
+      river => river.ponds.forEach(
+          pond => {
+
+            pond.pondSurface.forEach(globalPonds.add);
+            annotateAllPoints(pond.pondSurface, annotationColor.RED)
+          }));
 
   longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
 
   // DEBUG
-  longRivers.map(r => r.river).forEach(applyRiverOutline)
+  longRivers.map(r => r.river).forEach(r => applyRiverOutline(r, globalPonds, 0))
   // !DEBUG
 
 
