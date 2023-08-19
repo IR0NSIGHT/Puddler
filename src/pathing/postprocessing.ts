@@ -28,7 +28,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
     const riverProfile: riverProfilePoint[] = river.map(
         (point, index) => ({
             ...withZ(point),
-            width: 2,
+            width: 0.01*index,
             depth: 2,
             speed: 1
         })
@@ -57,7 +57,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
         const children = allPoints.filter(layerPoint => pointsEqual(layerPoint.parent, profilePoint))
         const widthSquared = profilePoint.width * profilePoint.width
 
-        children
+        children.filter(pondSurface.hasNot)
             .map(child => ({
                 ...child,
                 distSquared: squaredDistance(profilePoint, child)
@@ -65,7 +65,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
             .forEach(child => {
                 if (child.distSquared <= widthSquared) {
                     applyAsRiverBed(child, profilePoint)
-                } else if (!isOcean(child) && !pondSurface.has(child)) {
+                } else if (!isOcean(child) && child.distSquared <= widthSquared +1) {   //1 layer of outline
                     applyAsRiverBank(child, profilePoint)
                 }
             })
