@@ -1,8 +1,8 @@
 import {getNeighbourPointsDiagonal, point, squaredDistance, withZ, zPoint} from "../point";
 import {makeSet, SeenSetReadOnly} from "../SeenSet";
 
-type layerPoint = zPoint & { parent: zPoint }
-type layer = layerPoint[]
+export type layerPoint = zPoint & { parent: zPoint }
+export type layer = layerPoint[]
 export const collectLayers = (river: point[], iterations: number): layer[] => {
     const ignoreAsNeighbour = makeSet()
     const layers: layer[] = []

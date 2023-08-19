@@ -1,6 +1,6 @@
-import {getNeighbourPoints, point, zPoint} from "../point";
+import {getNeighbourPoints, point, pointsEqual, squaredDistance, withZ, zPoint} from "../point";
 import {getTerrainById, getZ} from "../terrain";
-import {collectLayers} from "./riverLayer";
+import {collectLayers, layerPoint} from "./riverLayer";
 import {annotateAll} from "../puddle";
 import {annotationColor} from "./river";
 import {SeenSetReadOnly} from "../SeenSet";
@@ -21,37 +21,53 @@ export const minFilter = (
     };
 };
 
+
+type riverProfilePoint = zPoint & riverProfile
+type riverProfile = { width: number, depth: number, speed: number }
 export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, waterLevelModifier: number): void => {
-
-    const outlines = collectLayers(river, 4)
-    let i = 0
-    outlines.forEach(outline => {
-        i += 1;
-        const isRiverBed = (point: zPoint, layerIdx: number) : boolean=> layerIdx <= 4
-        const isOcean = (point: zPoint, layerIdx: number) : boolean=> point.z <= params.waterLevel
-        outline.filter(pondSurface.hasNot).forEach(p => {
-            if (p.parent === undefined) {
-                throw new Error("position does not have parent: " + p.x + " " + p.y + "")
-            }
-
-            if (isRiverBed(p, i)) {
-                dimension.setHeightAt(p.x, p.y, p.parent.z + waterLevelModifier - 1)
-                //const terracotta = 10 + (Math.abs(p.parent.z) % 16)
-                //if (terracotta < 10 || terracotta > 26) {
-                //    throw new Error("terracotta out of bounds: " + terracotta)
-                //}
-                dimension.setTerrainAt(p.x, p.y, getTerrainById(22))    //blue terracotta
-                dimension.setWaterLevelAt(p.x,p.y, p.parent.z + waterLevelModifier)
-                annotateAll([p], annotationColor.PURPLE)
-
-            } else {
-                if (isOcean(p, i))
-                    return
-                //raise riverbank
-                dimension.setHeightAt(p.x, p.y, p.parent.z )
-                dimension.setTerrainAt(p.x, p.y, getTerrainById(24)) // green terracotta
-                annotateAll([p], annotationColor.ORANGE)
-            }
+    const riverProfile: riverProfilePoint[] = river.map(
+        (point, index) => ({
+            ...withZ(point),
+            width: 2,
+            depth: 2,
+            speed: 1
         })
+    )
+
+    const outlines = collectLayers(riverProfile, 4)
+    const allPoints: layerPoint[] = []
+    outlines.forEach(layer => allPoints.push(...layer))
+
+    const applyAsRiverBed = (point: layerPoint, profile: riverProfile): void => {
+        dimension.setHeightAt(point.x, point.y, point.parent.z - profile.depth)
+        dimension.setTerrainAt(point.x, point.y, getTerrainById(22))    //blue terracotta
+        dimension.setWaterLevelAt(point.x, point.y, point.parent.z)
+        annotateAll([point], annotationColor.PURPLE)
+    }
+
+    const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
+        dimension.setHeightAt(p.x, p.y, p.parent.z)
+        dimension.setTerrainAt(p.x, p.y, getTerrainById(24)) // green terracotta
+        annotateAll([p], annotationColor.ORANGE)
+    }
+
+    const isOcean = (point: zPoint): boolean => point.z <= params.waterLevel
+
+    riverProfile.map(profilePoint => {
+        const children = allPoints.filter(layerPoint => pointsEqual(layerPoint.parent, profilePoint))
+        const widthSquared = profilePoint.width * profilePoint.width
+
+        children
+            .map(child => ({
+                ...child,
+                distSquared: squaredDistance(profilePoint, child)
+            }))
+            .forEach(child => {
+                if (child.distSquared <= widthSquared) {
+                    applyAsRiverBed(child, profilePoint)
+                } else if (!isOcean(child)) {
+                    applyAsRiverBank(child, profilePoint)
+                }
+            })
     })
 }
