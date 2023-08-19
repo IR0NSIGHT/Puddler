@@ -10,6 +10,7 @@ import {applyRiverOutline} from "./pathing/postprocessing";
 const main = () => {
   params.floodPuddles = true; //FIXME DEBUG
   params.annotateAll = false; //FIXME DEBUG
+  params.stopOnWater = true;
   const {
     maxSurface,
     minRiverLength,
