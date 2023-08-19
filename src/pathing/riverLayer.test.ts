@@ -1,6 +1,6 @@
-import {collectOneLayer, findClosestIndex} from "./riverLayer";
-import {makeSet} from "../SeenSet";
-import {point, pointsEqual, squaredDistance} from "../point";
+import {collectLayers, collectOneLayer, findClosestIndex} from "./riverLayer";
+import {makeSet, makeSetFrom} from "../SeenSet";
+import {point, squaredDistance} from "../point";
 
 // Replace the original module with the mock implementation
 jest.mock('../SeenSet');
@@ -112,9 +112,48 @@ describe("", () => {
         const layer = collectOneLayer(river, river, makeSet())
 
         layer
-            .filter(p =>squaredDistance(p,river[0]) == squaredDistance(p, river[1]))
+            .filter(p => squaredDistance(p, river[0]) == squaredDistance(p, river[1]))
             .forEach(p => {
                 expect(p.parent).toEqual(river[0])
             })
+    })
+
+    test("", () => {
+        (global as any).dimension.getHeightAt = (x: number, y: number) => y
+
+
+        //reverse riverpoint order
+        const river = [
+            {x: 10, y: 10, z: 10, parent: undefined},
+            {x: 10, y: 11, z: 11, parent: undefined},
+            {x: 10, y: 12, z: 12, parent: undefined},
+            {x: 10, y: 13, z: 13, parent: undefined},
+            {x: 10, y: 14, z: 14, parent: undefined},
+            {x: 10, y: 15, z: 15, parent: undefined},
+            {x: 10, y: 16, z: 16, parent: undefined},
+            {x: 10, y: 17, z: 17, parent: undefined},
+            {x: 10, y: 18, z: 18, parent: undefined},
+            {x: 10, y: 19, z: 19, parent: undefined},
+            {x: 10, y: 20, z: 20, parent: undefined},
+
+        ]
+        const layers = collectLayers(river, 5)
+
+        //all parents are define
+        layers.forEach(layer => layer.forEach(
+            p => expect(p.parent).toBeDefined()
+        ))
+
+        const zeroLayer = makeSetFrom(layers[0])
+        expect(layers[0].length).toEqual(river.length)
+        river.forEach(p => {
+            expect(zeroLayer.has(p)).toBeTruthy()
+        })
+
+        layers[1].forEach(p => {
+            expect(p.parent).toEqual({x: 10, y: p.y, z: p.y})
+        })
+
+        expect(layers[1].length).toEqual(river.length * 2 + 6)
     })
 })

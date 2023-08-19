@@ -1,26 +1,30 @@
 import {getNeighbourPointsDiagonal, point, squaredDistance, withZ, zPoint} from "../point";
 import {makeSet, SeenSetReadOnly} from "../SeenSet";
 
-type layerPoint = zPoint & { parent: layerPoint | undefined }
+type layerPoint = zPoint & { parent: zPoint | undefined }
 type layer = layerPoint[]
 export const collectLayers = (river: point[], iterations: number): layer[] => {
     const ignoreAsNeighbour = makeSet()
     const layers: layer[] = []
-    const firstLayer: layer = river.map(p => ({...withZ(p), parent: undefined}))
+    const firstLayer: layer = river.map(p => ({...withZ(p), parent: withZ(p)}))
     layers.push(firstLayer)
 
     let origins: layer = firstLayer;
+    const parents: zPoint[] = river.map(withZ)
     for (let i = 0; i < iterations; i++) {
-        const layer = collectOneLayer(origins, origins, ignoreAsNeighbour)
+        const layer = collectOneLayer(origins, parents, ignoreAsNeighbour)
         layer.forEach(ignoreAsNeighbour.add)
         layers.push(layer)
         origins = layer //set new start points
+        layer.forEach(p => {
+            if (p.parent === undefined) throw new Error("p.parent is undefined for "+ JSON.stringify(p.parent))
+        })
     }
 
     return layers
 }
 
-export const collectOneLayer = (origins: layerPoint[], parents: layerPoint[], invalidNeighbours: SeenSetReadOnly): layer => {
+export const collectOneLayer = (origins: layerPoint[], parents: zPoint[], invalidNeighbours: SeenSetReadOnly): layer => {
     const originsSet = makeSet()
     const nsSet = makeSet()
     origins.forEach(originsSet.add)
@@ -43,8 +47,9 @@ export const collectOneLayer = (origins: layerPoint[], parents: layerPoint[], in
  * @param list
  * @independent
  */
-const findParent = (p: point, list: layerPoint[]): layerPoint => {
+const findParent = (p: point, list: zPoint[]): zPoint => {
     const idx = findClosestIndex(p, list);
+    if (idx == -1) throw new Error("no parent found found point "+ JSON.stringify(p) + " in list " + JSON.stringify(list));
     return list[idx];
 }
 

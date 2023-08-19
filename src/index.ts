@@ -9,6 +9,8 @@ import {applyRiverOutline} from "./pathing/postprocessing";
 
 
 const main = () => {
+  params.floodPuddles = true; //FIXME DEBUG
+  params.annotateAll = false; //FIXME DEBUG
   const {
     maxSurface,
     minRiverLength,
@@ -115,7 +117,11 @@ const main = () => {
       (p => p.pondSurface.forEach(globalPonds.add)));
 
   longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
-  //longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
+
+  // DEBUG
+  longRivers.map(r => r.river).forEach(applyRiverOutline)
+  // !DEBUG
+
 
   let allPonds: Puddle[] = [];
   longRivers.map(r => r.ponds)
@@ -140,9 +146,7 @@ const main = () => {
   }
 
 
-  // DEBUG
-  longRivers.map(r => r.river).forEach(applyRiverOutline)
-  // !DEBUG
+
 
 
   let totalLength = 0;

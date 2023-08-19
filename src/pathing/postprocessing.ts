@@ -1,7 +1,8 @@
 import {getNeighbourPoints, point} from "../point";
-import {getZ} from "../terrain";
+import {getTerrainById, getZ} from "../terrain";
 import {collectLayers} from "./riverLayer";
 import {annotateAll} from "../puddle";
+import {annotationColor} from "./river";
 
 /**
  * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
@@ -20,11 +21,26 @@ export const minFilter = (
 };
 
 export const applyRiverOutline = (river: point[]): void => {
+
     const outlines = collectLayers(river, 4)
     let i = 0
     outlines.forEach(outline => {
-            annotateAll(outline, 3 + i);
-            i += 1;
-        }
-    )
+        i += 1;
+        outline.forEach(p => {
+            if (p.parent === undefined) {
+                throw new Error("position does not have parent: " + p.x + " " + p.y + "")
+            }
+
+                dimension.setHeightAt(p.x, p.y, p.parent.z - 5)
+                const terracotta = 10 + (Math.abs(p.parent.z) % 16)
+                if (terracotta < 10 || terracotta > 26) {
+                    throw new Error("terracotta out of bounds: " + terracotta)
+                }
+                dimension.setTerrainAt(p.x, p.y, getTerrainById(terracotta))
+                //dimension.setWaterLevelAt(p.x,p.y, p.parent.z)
+        })
+    })
+    annotateAll(outlines[0], annotationColor.YELLOW);
+
+
 }
