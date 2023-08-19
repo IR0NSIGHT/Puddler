@@ -65,7 +65,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
             .forEach(child => {
                 if (child.distSquared <= widthSquared) {
                     applyAsRiverBed(child, profilePoint)
-                } else if (!isOcean(child)) {
+                } else if (!isOcean(child) && !pondSurface.has(child)) {
                     applyAsRiverBank(child, profilePoint)
                 }
             })
