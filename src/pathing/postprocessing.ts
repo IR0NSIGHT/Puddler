@@ -40,14 +40,14 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
 
     const applyAsRiverBed = (point: layerPoint, profile: riverProfile): void => {
         dimension.setHeightAt(point.x, point.y, point.parent.z - profile.depth)
-        dimension.setTerrainAt(point.x, point.y, getTerrainById(22))    //blue terracotta
+    //    dimension.setTerrainAt(point.x, point.y, getTerrainById(22))    //blue terracotta
         dimension.setWaterLevelAt(point.x, point.y, point.parent.z)
         annotateAll([point], annotationColor.PURPLE)
     }
 
     const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
         dimension.setHeightAt(p.x, p.y, p.parent.z)
-        dimension.setTerrainAt(p.x, p.y, getTerrainById(24)) // green terracotta
+    //    dimension.setTerrainAt(p.x, p.y, getTerrainById(24)) // green terracotta
         annotateAll([p], annotationColor.ORANGE)
     }
 
