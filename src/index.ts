@@ -1,16 +1,16 @@
 import {makeSet} from "./SeenSet";
 import {timer} from "./Timer";
-import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
+import {RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
-import {annotateAll as annotateAllPoints, applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
+import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
 import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
-import {applyRiverOutline} from "./pathing/postprocessing";
+import {applyRiverLayers} from "./pathing/postprocessing";
 
 const main = () => {
-  params.floodPuddles = true; //FIXME DEBUG
-  params.annotateAll = false; //FIXME DEBUG
-  params.stopOnWater = true;
+  //params.floodPuddles = false; //FIXME DEBUG
+  //params.annotateAll = false; //FIXME DEBUG
+  params.stopOnWater = false;
   const {
     maxSurface,
     minRiverLength,
@@ -20,10 +20,10 @@ const main = () => {
     annotateAll
   } = params;
 
-  if (!floodPuddles && !applyRivers && !annotateAll) {
-    log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
-    return;
-  }
+  //if (!floodPuddles && !applyRivers && !annotateAll) {
+  //  log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
+  //  return;
+  //}
 
   log("max surface = " + maxSurface);
   let startPoints: point[] = [];
@@ -115,15 +115,11 @@ const main = () => {
   longRivers.forEach(
       river => river.ponds.forEach(
           pond => {
-
             pond.pondSurface.forEach(globalPonds.add);
-            annotateAllPoints(pond.pondSurface, annotationColor.RED)
           }));
 
-  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
-
   // DEBUG
-  longRivers.map(r => r.river).forEach(r => applyRiverOutline(r, globalPonds, 0))
+  longRivers.map(r => r.river).forEach(r => applyRiverLayers(r, globalPonds, exportTargetRiver))
   // !DEBUG
 
 
