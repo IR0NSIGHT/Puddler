@@ -6,10 +6,10 @@ downloads: https://github.com/IR0NSIGHT/Puddler/releases
 github: https://github.com/IR0NSIGHT/Puddler
 
 
-|              1               |                 1                 |
-|:----------------------------:|:---------------------------------:|
-| ![](PR/example_birdseye.png) | ![](PR/widerPuddler_annotate.png) |
-|    ![](PR/lake_wide.png)     |      ![](PR/river_flat.png)       |
+|               1                |                  1                  |
+|:------------------------------:|:-----------------------------------:|
+| ![](PR/example_birdseye_1.png) | ![](PR/widerPuddler_annotate_1.png) |
+|     ![](PR/lake_wide.png)      |       ![](PR/river_flat.png)        |
 
 # Instructions
 
