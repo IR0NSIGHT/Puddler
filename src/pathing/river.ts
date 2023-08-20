@@ -44,7 +44,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
 
   while (safetyIt < 1000) {
     safetyIt++;
-    if (getZ(current) < params.waterLevel || isWater(current)) //base water level reached
+    if (getZ(current) < params.waterLevel || (params.stopOnWater && isWater(current))) //base water level reached
         break;
 
     let pathToDrop = findClosestDrop(current, getZ(current));
@@ -89,7 +89,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         break;
       }
 
-      if (isWater(point.point)) {
+      if (params.stopOnWater && isWater(point.point)) {
         break;
       }
       path.push(point);
