@@ -1,11 +1,11 @@
 import {makeSet} from "./SeenSet";
 import {timer} from "./Timer";
-import {applyRiverToTerrain, RiverExportTarget} from "./applyRiver";
+import {RiverExportTarget} from "./applyRiver";
 import {log} from "./log";
 import {mapDimensions, point} from "./point";
 import {applyPuddleToMap, Puddle, PuddleExportTarget} from "./puddle";
 import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
-
+import {applyRiverLayers} from "./pathing/postprocessing";
 
 const main = () => {
   const {
@@ -14,13 +14,14 @@ const main = () => {
     blocksPerRiver,
     floodPuddles,
     applyRivers,
-    annotateAll
+    annotateAll,
+    growthRate
   } = params;
 
-  if (!floodPuddles && !applyRivers && !annotateAll) {
-    log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
-    return;
-  }
+  //if (!floodPuddles && !applyRivers && !annotateAll) {
+  //  log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
+  //  return;
+  //}
 
   log("max surface = " + maxSurface);
   let startPoints: point[] = [];
@@ -110,11 +111,15 @@ const main = () => {
 
   const globalPonds = makeSet();
   longRivers.forEach(
-      r => r.ponds.forEach
-      (p => p.pondSurface.forEach(globalPonds.add)));
+      river => river.ponds.forEach(
+          pond => {
+            pond.pondSurface.forEach(globalPonds.add);
+          }));
 
-  longRivers.forEach(r => applyRiverToTerrain(r, exportTargetRiver, globalPonds));
-  //longRivers.forEach(r => r.ponds.forEach(p => applyPuddleToMap(p.pondSurface, p.waterLevel, exportTargetPuddle)))
+  // DEBUG
+  longRivers.map(r => r.river).forEach(r => applyRiverLayers(r, globalPonds, exportTargetRiver))
+  // !DEBUG
+
 
   let allPonds: Puddle[] = [];
   longRivers.map(r => r.ponds)
@@ -137,6 +142,10 @@ const main = () => {
     pond.pondSurface.forEach(processedPondSurface.add)
     applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle)
   }
+
+
+
+
 
   let totalLength = 0;
   longRivers.forEach((r) => (totalLength += r.river.length));

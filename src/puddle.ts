@@ -1,9 +1,8 @@
 import {makeQueue, queue} from "./PointQueue";
 import {makeSet, SeenSetReadOnly} from "./SeenSet";
 import {getNeighbourPoints, point,} from "./point";
-import {floodToLevel, getZ, markPos} from "./terrain";
+import {floodToLevel, getZ} from "./terrain";
 import {log} from "./log";
-import {annotationColor} from "./pathing/river";
 
 export type PuddleExportTarget = {
   flood: boolean,
