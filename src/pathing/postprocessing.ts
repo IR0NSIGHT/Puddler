@@ -1,5 +1,5 @@
 import {getNeighbourPoints, point, pointsEqual, squaredDistance, withZ, zPoint} from "../point";
-import {getTerrainById, getZ} from "../terrain";
+import {getZ, isWater} from "../terrain";
 import {collectLayers, layerPoint} from "./riverLayer";
 import {annotateAll} from "../puddle";
 import {annotationColor} from "./river";
@@ -28,7 +28,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
     const riverProfile: riverProfilePoint[] = river.map(
         (point, index) => ({
             ...withZ(point),
-            width: 0.01*index,
+            width: Math.sqrt(0.005*index),
             depth: 2,
             speed: 1
         })
@@ -57,7 +57,7 @@ export const applyRiverOutline = (river: point[], pondSurface: SeenSetReadOnly, 
         const children = allPoints.filter(layerPoint => pointsEqual(layerPoint.parent, profilePoint))
         const widthSquared = profilePoint.width * profilePoint.width
 
-        children.filter(pondSurface.hasNot)
+        children.filter(pondSurface.hasNot).filter(p => !isWater(p))
             .map(child => ({
                 ...child,
                 distSquared: squaredDistance(profilePoint, child)
