@@ -8,7 +8,7 @@ github: https://github.com/IR0NSIGHT/Puddler
 
 |              1               |                 1                 |
 |:----------------------------:|:---------------------------------:|
-| ![](PR/example_birdseye.PNG) | ![](PR/widerPuddler_annotate.PNG) |
+| ![](PR/example_birdseye.png) | ![](PR/widerPuddler_annotate.png) |
 |    ![](PR/lake_wide.png)     |      ![](PR/river_flat.png)       |
 
 # Instructions
