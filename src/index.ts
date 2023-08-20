@@ -8,16 +8,14 @@ import {annotationColor, capRiverStart, pathRiverFrom} from "./pathing/river";
 import {applyRiverLayers} from "./pathing/postprocessing";
 
 const main = () => {
-  //params.floodPuddles = false; //FIXME DEBUG
-  //params.annotateAll = false; //FIXME DEBUG
-  params.stopOnWater = false;
   const {
     maxSurface,
     minRiverLength,
     blocksPerRiver,
     floodPuddles,
     applyRivers,
-    annotateAll
+    annotateAll,
+    growthRate
   } = params;
 
   //if (!floodPuddles && !applyRivers && !annotateAll) {

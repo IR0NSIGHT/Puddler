@@ -28,7 +28,7 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
     const riverProfile: riverProfilePoint[] = river.map(
         (point, index) => ({
             ...withZ(point),
-            width: Math.sqrt(0.005 * index),
+            width: Math.sqrt( params.growthRate * index),
             depth: 2,
             speed: 1
         })

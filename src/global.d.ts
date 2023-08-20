@@ -11,6 +11,7 @@ declare const params: {
   applyRivers: boolean;
   annotateAll: boolean;
   waterLevel: number;
-  stopOnWater: boolean
+  stopOnWater: boolean;
+  growthRate: number;
 };
 

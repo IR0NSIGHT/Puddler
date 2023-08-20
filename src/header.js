@@ -43,3 +43,15 @@
 //script.param.waterLevel.optional=false
 //script.param.waterLevel.default=62
 //script.param.waterLevel.displayName=Ocean Water Level
+
+//script.param.stopOnWater.type=boolean
+//script.param.stopOnWater.description=stop the river if it hits a body of water
+//script.param.stopOnWater.optional=false
+//script.param.stopOnWater.default=true
+//script.param.stopOnWater.displayName=Stop on Water
+
+//script.param.growthRate.type=float
+//script.param.growthRate.description=How fast a river grows in width. formula is width = sqrt(rate * length)
+//script.param.growthRate.optional=false
+//script.param.growthRate.default=0.005
+//script.param.growthRate.displayName=Growth Rate of river width
