@@ -18,6 +18,8 @@ const main = () => {
     growthRate
   } = params;
 
+  //hello world;
+
   //if (!floodPuddles && !applyRivers && !annotateAll) {
   //  log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
   //  return;
