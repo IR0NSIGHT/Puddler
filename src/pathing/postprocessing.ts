@@ -34,7 +34,7 @@ type riverProfile = { width: number, depth: number, speed: number }
  * @param dist
  */
 const depthByDist = (maxWidth: number, maxDepth: number, dist: number): number => {
-    return (dist / maxWidth) * (dist / maxWidth) * maxDepth;
+    return maxDepth - ((dist / maxWidth) * (dist / maxWidth) * maxDepth);
 }
 
 export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, riverExport: RiverExportTarget): void => {
@@ -44,7 +44,7 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
             y: point.point.y,
             z: point.z,
             width: Math.sqrt(params.growthRate * index),
-            depth: 2,
+            depth: Math.sqrt(params.growthRate * index),
             speed: 1
         })
     )
@@ -64,7 +64,7 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
             const lip = dimension.getSlope(point.x, point.y) > 1 ? 1 : 0 //1 == 45°
 
             const depth = depthByDist(profile.width, profile.depth, Math.sqrt(squaredDistToParent));
-            dimension.setHeightAt(point.x, point.y, point.parent.z - profile.depth - lip)
+            dimension.setHeightAt(point.x, point.y, point.parent.z - depth - lip)
             dimension.setWaterLevelAt(point.x, point.y, point.parent.z - lip)
         }
 
