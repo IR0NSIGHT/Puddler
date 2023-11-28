@@ -32,7 +32,7 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
             y: point.point.y,
             z: point.z,
             width: Math.sqrt( params.growthRate * index),
-            depth: 2,
+            depth: 1,
             speed: 1
         })
     )
