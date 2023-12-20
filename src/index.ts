@@ -44,7 +44,9 @@ const main = () => {
   const tiles: Tile[] = []
   for (let x = dims.start.x>>TILE_SIZE_BITS; x < dims.end.x>>TILE_SIZE_BITS; x++) {
     for (let y = dims.start.y>>TILE_SIZE_BITS; y < dims.end.y>>TILE_SIZE_BITS; y++) {
-      tiles.push(dimension.getTile(x, y))
+      const tile = dimension.getTile(x, y)
+      if (tile != null)
+        tiles.push(tile)
     }
   }
 
