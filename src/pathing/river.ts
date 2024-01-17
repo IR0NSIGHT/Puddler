@@ -65,22 +65,29 @@ enum RiverStoppedReason {
     error
 }
 
+/**
+ * will generate the next segment of the river from starting point.
+ * can climb uphill if from-point is the bottom of a puddle
+ * @param from
+ * @param pondParams
+ * @param puddleDebugSet
+ */
 const advanceRiver = (from: parentedPoint, pondParams: PondGenerationParams, puddleDebugSet: SeenSet): {
     generatedPond: Puddle | undefined,
-    riverPath: parentedPoint[],
+    riverSegment: parentedPoint[],
     stopped: RiverStoppedReason | undefined,
 
 } => {
     if (getZ(from.point) < params.waterLevel) //base water level reached
         return {
             generatedPond: undefined,
-            riverPath: [],
+            riverSegment: [],
             stopped: RiverStoppedReason.belowOceanLevel
         }
     if (params.stopOnWater && isWater(from.point)) {
         return {
             generatedPond: undefined,
-            riverPath: [],
+            riverSegment: [],
             stopped: RiverStoppedReason.foundWater
         }
     }
@@ -90,7 +97,7 @@ const advanceRiver = (from: parentedPoint, pondParams: PondGenerationParams, pud
     if (pathToDrop !== undefined) {
         return {
             generatedPond: undefined,
-            riverPath: pathToDrop,
+            riverSegment: pathToDrop,
             stopped: undefined,
 
         }
@@ -103,13 +110,13 @@ const advanceRiver = (from: parentedPoint, pondParams: PondGenerationParams, pud
     if (escape.canEscape) {
         return {
             stopped: undefined,
-            riverPath: escape.escapePath,
+            riverSegment: escape.escapePath,
             generatedPond: pond
         }
     } else {
         return {
             stopped: RiverStoppedReason.error,
-            riverPath: [],
+            riverSegment: [],
             generatedPond: pond
         }
     }
@@ -151,9 +158,9 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
     while (safetyIt < 1000) {
         safetyIt++;
 
-        const {riverPath, stopped, generatedPond} = advanceRiver(path[path.length-1], pondParams, puddleDebugSet)
+        const {riverSegment, stopped, generatedPond} = advanceRiver(path[path.length-1], pondParams, puddleDebugSet)
 
-        const {merge, pointsBeforeMerge} = onlyPointsBeforeMerge(riverPath, rivers)
+        const {merge, pointsBeforeMerge} = onlyPointsBeforeMerge(riverSegment, rivers)
 
         pointsBeforeMerge.forEach(p => {
             thisRiverSet.add(p.point)
