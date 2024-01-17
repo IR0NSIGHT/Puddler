@@ -58,6 +58,79 @@ const escapePond = (pond: Puddle, startPoint: parentedPoint, puddleDebugSet: See
     }
 }
 
+enum RiverStoppedReason {
+    foundWater,
+    mergedIntoRiver,
+    belowOceanLevel,
+    error
+}
+
+const advanceRiver = (from: parentedPoint, pondParams: PondGenerationParams, puddleDebugSet: SeenSet): {
+    generatedPond: Puddle | undefined,
+    riverPath: parentedPoint[],
+    stopped: RiverStoppedReason | undefined,
+
+} => {
+    if (getZ(from.point) < params.waterLevel) //base water level reached
+        return {
+            generatedPond: undefined,
+            riverPath: [],
+            stopped: RiverStoppedReason.belowOceanLevel
+        }
+    if (params.stopOnWater && isWater(from.point)) {
+        return {
+            generatedPond: undefined,
+            riverPath: [],
+            stopped: RiverStoppedReason.foundWater
+        }
+    }
+
+    let pathToDrop = findClosestDrop(from.point, getZ(from.point));   //TODO refactor return type to use meaningful booleans
+
+    if (pathToDrop !== undefined) {
+        return {
+            generatedPond: undefined,
+            riverPath: pathToDrop,
+            stopped: undefined,
+
+        }
+    }
+
+    //could not find a dropPoint => caught in hole
+    const pond = findPondOutflow([from.point], pondParams.maxSurface, puddleDebugSet)
+    const escape = escapePond(pond, from, puddleDebugSet)
+
+    if (escape.canEscape) {
+        return {
+            stopped: undefined,
+            riverPath: escape.escapePath,
+            generatedPond: pond
+        }
+    } else {
+        return {
+            stopped: RiverStoppedReason.error,
+            riverPath: [],
+            generatedPond: pond
+        }
+    }
+}
+
+const findIndex = <T>(arr: T[], match: (x: T) => boolean): number => {
+    for (let i = 0; i < arr.length; i++) {
+        if (match(arr[i]))
+            return i;
+    }
+    return -1;
+}
+const onlyPointsBeforeMerge = (riverPath: parentedPoint[], rivers: SeenSet) => {
+    const lastPointToAddIdx = findIndex<parentedPoint>(riverPath,(p: parentedPoint): boolean => {
+        return rivers.has(p.point) || (params.stopOnWater && isWater(p.point))
+    })
+    const didMerge = lastPointToAddIdx != -1
+    const pointsBeforeMerge = didMerge ? riverPath.slice(0, lastPointToAddIdx) : riverPath
+    return {merge: didMerge, pointsBeforeMerge: pointsBeforeMerge}
+}
+
 /**
  * start a new river path at this position
  * @param pos
@@ -70,50 +143,27 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
 } => {
     const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
     let safetyIt = 0;
-    let current = pos;
-    let riverMerged = false;
     const thisRiverSet = makeSet();
     const puddleDebugSet = makeSet();
-    const ponds = [];
+    const ponds: Puddle[] = [];
+
 
     while (safetyIt < 1000) {
         safetyIt++;
-        if (getZ(current) < params.waterLevel || (params.stopOnWater && isWater(current))) //base water level reached
+
+        const {riverPath, stopped, generatedPond} = advanceRiver(path[path.length-1], pondParams, puddleDebugSet)
+
+        const {merge, pointsBeforeMerge} = onlyPointsBeforeMerge(riverPath, rivers)
+
+        pointsBeforeMerge.forEach(p => {
+            thisRiverSet.add(p.point)
+            path.push(p)
+        })
+        if (generatedPond)
+            ponds.push(generatedPond)
+        if (stopped|| merge ) {
             break;
-
-        let pathToDrop = findClosestDrop(current, getZ(current));
-
-        if (pathToDrop == undefined) { //could not find a dropPoint => caught in hole
-            //abort if closestDrop coulndt find anything
-            const pond = findPondOutflow([current], pondParams.maxSurface, puddleDebugSet)
-            //applyPuddleToMap(pond.pondSurface, pond.waterLevel, {annotationColor: undefined, flood: true});
-            ponds.push(pond);
-
-            const escape = escapePond(pond, path[path.length - 1], puddleDebugSet)
-            if (escape.canEscape) {
-                pathToDrop = escape.escapePath
-            } else {
-                break;  //not able to continue river. abort.
-            }
         }
-
-        //add found path to riverpoint list, until water/river is reached
-        for (let point of pathToDrop) {
-            if (rivers.has(point.point)) {
-                riverMerged = true;
-                break;
-            }
-
-            if (params.stopOnWater && isWater(point.point)) {
-                break;
-            }
-            path.push(point);
-            thisRiverSet.add(point.point);
-            // rivers.add(point.point);
-        }
-        if (riverMerged) break;
-        //end of path is droppoint
-        current = pathToDrop[pathToDrop.length - 1].point;
     }
     path.forEach((p) => rivers.add(p.point));
     return {river: path.map((a) => a.point), ponds: ponds};
