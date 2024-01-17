@@ -223,7 +223,6 @@ export function findClosestDrop(
     seenSet.add(startingPoint);
     let next: parentedPoint;
     let safetyIterator = 0;
-    let searchCenter: point = startingPoint
 
     while (queue.length != 0 && safetyIterator < 50000) {
         next = queue.shift() as parentedPoint;
@@ -250,7 +249,7 @@ export function findClosestDrop(
             insertInSortedQueue(queue, {
                 point: n,
                 parent: next,
-                distance: squaredDistanceBetweenPoints(n, searchCenter)
+                distance: squaredDistanceBetweenPoints(n, startingPoint)
             });
         });
         safetyIterator++;
