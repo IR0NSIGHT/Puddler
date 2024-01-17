@@ -72,7 +72,7 @@ enum RiverStoppedReason {
  * @param pondParams
  * @param puddleDebugSet
  */
-const advanceRiver = (from: parentedPoint, pondParams: PondGenerationParams, puddleDebugSet: SeenSet): {
+const nextRiverSegment = (from: parentedPoint, pondParams: PondGenerationParams, puddleDebugSet: SeenSet): {
     generatedPond: Puddle | undefined,
     riverSegment: parentedPoint[],
     stopped: RiverStoppedReason | undefined,
@@ -158,7 +158,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
     while (safetyIt < 1000) {
         safetyIt++;
 
-        const {riverSegment, stopped, generatedPond} = advanceRiver(path[path.length-1], pondParams, puddleDebugSet)
+        const {riverSegment, stopped, generatedPond} = nextRiverSegment(path[path.length-1], pondParams, puddleDebugSet)
 
         const {merge, pointsBeforeMerge} = onlyPointsBeforeMerge(riverSegment, rivers)
 
