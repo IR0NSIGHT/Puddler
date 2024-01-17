@@ -1,10 +1,11 @@
 import {getNeighbourPoints, point, pointsEqual, squaredDistance, withZ, zPoint} from "../point";
-import {getZ, isWater} from "../terrain";
+import {getZ, isWater, setWaterLevel, setZ} from "../terrain";
 import {collectLayers, layerPoint} from "./riverLayer";
 import {annotateAll} from "../puddle";
 import {SeenSetReadOnly} from "../SeenSet";
 import {RiverExportTarget} from "../applyRiver";
 import {log} from "../log";
+import {annotationColor} from "./river";
 
 /**
  * will get the z of the lowest neighbour of the riverpoint (which is the point after the point in the river)
@@ -25,6 +26,13 @@ export const minFilter = (
 
 type riverProfilePoint = zPoint & riverProfile
 type riverProfile = { width: number, depth: number, speed: number }
+
+/**
+ * apply river to map: cave out river bed, floor river bed, annotate
+ * @param river
+ * @param pondSurface
+ * @param riverExport
+ */
 export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, riverExport: RiverExportTarget): void => {
     const riverProfile: riverProfilePoint[] = river.map(minFilter).map(
         (point, index) => ({
@@ -44,8 +52,8 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
     const applyAsRiverBed = (point: layerPoint, profile: riverProfile): void => {
         if (riverExport.applyRivers) {
             const lip = dimension.getSlope(point.x, point.y) > 1 ? 1 : 0 //1 == 45°
-            dimension.setHeightAt(point.x, point.y, point.parent.z - profile.depth - lip)
-            dimension.setWaterLevelAt(point.x, point.y, point.parent.z-lip)
+            setZ(point, point.parent.z - profile.depth - lip)
+            setWaterLevel(point, point.parent.z -lip)
         }
 
         if (riverExport.annotationColor !== undefined) {
@@ -57,7 +65,8 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
     const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
         const lip = dimension.getSlope(p.x, p.y) > 1.5 ? 1 : 0 //1 == 45°
         if (riverExport.applyRivers) {
-            dimension.setHeightAt(p.x, p.y, p.parent.z + lip)
+            setZ(p, Math.max(getZ(p), p.parent.z + lip))
+            annotateAll([p],annotationColor.YELLOW)
         }
     }
 
