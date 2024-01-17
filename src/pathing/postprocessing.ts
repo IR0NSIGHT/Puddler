@@ -56,7 +56,6 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
 
     const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
         const lip = dimension.getSlope(p.x, p.y) > 1.5 ? 1 : 0 //1 == 45°
-        log(`slope: ${dimension.getSlope(p.x, p.y)}`)
         if (riverExport.applyRivers) {
             dimension.setHeightAt(p.x, p.y, p.parent.z + lip)
         }
