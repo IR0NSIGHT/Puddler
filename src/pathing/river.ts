@@ -3,6 +3,7 @@ import {addPoints, getNeighbourPoints, parentedPoint, parentedToList, point,} fr
 import {getZ, isWater} from "../terrain";
 import {findPondOutflow, PondGenerationParams, Puddle} from "../puddle";
 import {log} from "../log";
+import * as assert from "assert";
 
 export const testIfDownhill = (path: point[]) => {
     for (let i = 0; i < path.length - 1; i++) {
@@ -39,20 +40,20 @@ const escapePond = (pond: Puddle, startPoint: parentedPoint, puddleDebugSet: See
         const thisPond = makeSet();
         pond.pondSurface.forEach(thisPond.add);
         //connect pond to escape
-        const pathEscapeToPond = findClosestDrop(
+        const {pathToDrop, failed} = findClosestDrop(
             escapePoint.point,
             pond.waterLevel,
             (p) => thisPond.has(p), //we found a connection to the pond surface!
             (p: point) => getZ(p, true) <= pond.waterLevel
         )
-        if (pathEscapeToPond == undefined) {
+        if (failed) {
             log("ERROR: couldnt find path to escape point: " + JSON.stringify(escapePoint.point))
             return {canEscape: false, escapePath: []}
         }
-        const pathToDrop = pathEscapeToPond.reverse();
-        pathToDrop.shift(); //remove connectionpoint on pond surface
-        pathToDrop.push(escapePoint);
-        return {canEscape: true, escapePath: pathToDrop}
+        const pathOutOfPond = pathToDrop.reverse();
+        pathOutOfPond.shift(); //remove connectionpoint on pond surface
+        pathOutOfPond.push(escapePoint);
+        return {canEscape: true, escapePath: pathOutOfPond}
     } else {
         return {canEscape: false, escapePath: []}
     }
@@ -92,9 +93,9 @@ const nextRiverSegment = (from: parentedPoint, pondParams: PondGenerationParams,
         }
     }
 
-    let pathToDrop = findClosestDrop(from.point, getZ(from.point));   //TODO refactor return type to use meaningful booleans
+    const {pathToDrop, failed} = findClosestDrop(from.point, getZ(from.point));   //TODO refactor return type to use meaningful booleans
 
-    if (pathToDrop !== undefined) {
+    if (!failed) {
         return {
             generatedPond: undefined,
             riverSegment: pathToDrop,
@@ -130,7 +131,7 @@ const findIndex = <T>(arr: T[], match: (x: T) => boolean): number => {
     return -1;
 }
 const onlyPointsBeforeMerge = (riverPath: parentedPoint[], rivers: SeenSet) => {
-    const lastPointToAddIdx = findIndex<parentedPoint>(riverPath,(p: parentedPoint): boolean => {
+    const lastPointToAddIdx = findIndex<parentedPoint>(riverPath, (p: parentedPoint): boolean => {
         return rivers.has(p.point) || (params.stopOnWater && isWater(p.point))
     })
     const didMerge = lastPointToAddIdx != -1
@@ -158,8 +159,11 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
     while (safetyIt < 1000) {
         safetyIt++;
 
-        const {riverSegment, stopped, generatedPond} = nextRiverSegment(path[path.length-1], pondParams, puddleDebugSet)
-
+        const {
+            riverSegment,
+            stopped,
+            generatedPond
+        } = nextRiverSegment(path[path.length - 1], pondParams, puddleDebugSet)
         const {merge, pointsBeforeMerge} = onlyPointsBeforeMerge(riverSegment, rivers)
 
         pointsBeforeMerge.forEach(p => {
@@ -168,7 +172,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         })
         if (generatedPond)
             ponds.push(generatedPond)
-        if (stopped|| merge ) {
+        if (stopped || merge) {
             break;
         }
     }
@@ -211,7 +215,7 @@ export function findClosestDrop(
     posZ: number,
     isDrop: (p: point) => boolean = (p) => getZ(p, true) < Math.round(posZ),
     isValidNeighbour: (p: point) => boolean = (p) => getZ(p, true) <= posZ
-): parentedPoint[] | undefined {
+): { pathToDrop: parentedPoint[], failed: boolean } {
     const seenSet: SeenSet = makeSet();
 
     const queue: parentedPoint[] = [];
@@ -227,7 +231,7 @@ export function findClosestDrop(
             const path = parentedToList(next, []).reverse();
             //path starts with startingPoint, which is not wanted
             path.shift();
-            return path;
+            return {pathToDrop: path, failed: false};
         }
 
         let neighbours = getNeighbourPoints(next.point).filter(seenSet.hasNot);
@@ -251,7 +255,7 @@ export function findClosestDrop(
         });
         safetyIterator++;
     }
-    return undefined;
+    return {pathToDrop: [], failed: true};
 }
 
 export const capRiverStart = (river: point[], slice: number) => {

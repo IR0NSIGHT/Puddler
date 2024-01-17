@@ -17,7 +17,7 @@ describe('helper function river path', () => {
     test("distance calculation easy", () => {
         const pointA = {x: 10, y: 10};
         const pointB = {x: 20, y: 20};
-        expect(squaredDistanceBetweenPoints(pointA, pointB)).toBe(10 * 10 + 10*10);
+        expect(squaredDistanceBetweenPoints(pointA, pointB)).toBe(10 * 10 + 10 * 10);
     })
 
     test("sorted queue", () => {
@@ -73,10 +73,10 @@ describe("river pathing", () => {
     });
 
     test("path to drop follows easy downhill", () => {
-        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path).toBeDefined()
-        expect(path![0].point).toEqual({x: 4, y: 5})
-        expect(path!.length).toBe(1)
+        const {pathToDrop, failed} = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
+        expect(failed).toBeFalsy()
+        expect(pathToDrop![0].point).toEqual({x: 4, y: 5})
+        expect(pathToDrop!.length).toBe(1)
     })
 
     test("path to drop can cross flat area", () => {
@@ -84,10 +84,10 @@ describe("river pathing", () => {
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
             return (x == 2 && y == 5) ? 0 : 42
         }
-        const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path).toBeDefined()
-        expect(path!.length ).toEqual(3)
-        expect(path![path!.length - 1].point).toEqual({x: 2, y: 5})
+        const {pathToDrop} = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
+        expect(pathToDrop).toBeDefined()
+        expect(pathToDrop!.length).toEqual(3)
+        expect(pathToDrop![pathToDrop!.length - 1].point).toEqual({x: 2, y: 5})
     })
 
     test("path to drop can fail if no drop", () => {
@@ -97,7 +97,7 @@ describe("river pathing", () => {
             return (x == 5 && y == 5) ? 0 : 42
         }
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path).toBeUndefined();
+        expect(path.failed).toBeTruthy()
     })
 
     test("path to drop can not walk uphill to drop", () => {
@@ -108,7 +108,7 @@ describe("river pathing", () => {
             return 42
         }
         const path = findClosestDrop({x: 5, y: 5}, getZ({x: 5, y: 5}));
-        expect(path).toBeUndefined();
+        expect(path.failed).toBeTruthy()
     })
 
     test("river paths downhill and stops at waterlevel", () => {
@@ -133,13 +133,13 @@ describe("river pathing", () => {
     test("findPondOutflow escapes simple pond", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
-            if (x == 5 && (y == 5 ||y == 6)) return 100;
+            if (x == 5 && (y == 5 || y == 6)) return 100;
             if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
             return 110
         }
         const start = {x: 5, y: 5};
 
-        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        const {pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
         expect(pondSurface.length).toEqual(2)
         expect(waterLevel).toEqual(110)
         expect(depth).toEqual(10)
@@ -149,13 +149,13 @@ describe("river pathing", () => {
     test("findPondOutflow escapes deep pond", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
-            if (x == 5 && (y == 5 ||y == 6)) return 100;
+            if (x == 5 && (y == 5 || y == 6)) return 100;
             if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
             return 200
         }
         const start = {x: 5, y: 5};
 
-        const { pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
+        const {pondSurface, waterLevel, depth, escapePoint} = findPondOutflow([start], 1000000, makeSet())
         expect(pondSurface.length).toEqual(2)
         expect(waterLevel).toEqual(200)
         expect(depth).toEqual(100)
@@ -165,8 +165,8 @@ describe("river pathing", () => {
     test("findPondOutflow doesnt walk uphill", () => {
         //mock: area is flat, starts in drop
         (global as any).dimension.getHeightAt = (x: number, y: number) => {
-            if (x == 5 && (y == 5 ||y == 6)) return 100;    //first and start pond
-            if (x == 5 && (y == 1 ||y == 2)) return 100;    //second pond to traverse
+            if (x == 5 && (y == 5 || y == 6)) return 100;    //first and start pond
+            if (x == 5 && (y == 1 || y == 2)) return 100;    //second pond to traverse
             if (x == 0 && y == 5) return 0; //existing drop but not reachable without going uphill
             return 110
         }
@@ -193,7 +193,7 @@ describe("river pathing", () => {
         const start = {x: 0, y: 0};
 
         const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
-        expect(river).toBeDefined()
+    //    expect(river).toEqual([{x: 0, y: 0}, {x: 0, y: 1},{x:1,y:1}])
         expect(river[0]).toEqual(start)
         expect(river[river.length - 1]).toEqual({x: 8, y: 8})
         expect(ponds.length).toEqual(2)
@@ -210,11 +210,15 @@ describe("river pathing", () => {
 
             return a.y - b.y;
         };
-        const pondIdeal: point[] = []
-        for (let x = 0; x < 5; x++)
-            for (let y = 0; y < 5; y++)
-                pondIdeal.push({x: x, y: y})
 
+        const pondIdeal: point[] =
+            [
+                {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}, {x: 0, y: 3}, {x: 0, y: 4},
+                {x: 1, y: 0}, {x: 1, y: 1}, {x: 1, y: 2}, {x: 1, y: 3}, {x: 1, y: 4},
+                {x: 2, y: 0}, {x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 3}, {x: 2, y: 4},
+                {x: 3, y: 0}, {x: 3, y: 1}, {x: 3, y: 2}, {x: 3, y: 3}, {x: 3, y: 4},
+                {x: 4, y: 0}, {x: 4, y: 1}, {x: 4, y: 2}, {x: 4, y: 3}, {x: 4, y: 4}
+            ]
         expect(pondIdeal.sort(comparePoints)).toEqual(ponds[1].pondSurface.sort(comparePoints))
 
     })
