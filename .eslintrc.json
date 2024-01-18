@@ -9,5 +9,9 @@
     ],
     "rules": {
         // Add any custom rules here
-    }
+    },
+    "ignorePatterns": [
+        "src/worldpainterStubs",
+        "**/*.test.ts"
+    ]
 }

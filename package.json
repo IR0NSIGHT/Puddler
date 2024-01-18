@@ -9,7 +9,10 @@
     "insertHeader": "bash ./shellscripts/insertHeader.sh",
     "deploy": "npm run build && npm run insertHeader src/header.js dist/Puddler.js && cp README.md dist/README.md && cp LICENSE dist/LICENSE",
     "build": "npm run compile && webpack",
-    "lint": "eslint ./src"
+    "lint": "npm run lint:format && npm run lint:analyse",
+    "lint:format": "prettier --check ./src",
+    "lint:analyse": "eslint ./src",
+    "lint:format:fix": "prettier --write ./src"
   },
   "author": "",
   "license": "ISC",
