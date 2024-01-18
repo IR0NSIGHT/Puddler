@@ -51,9 +51,12 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
 
     const applyAsRiverBed = (point: layerPoint, profile: riverProfile): void => {
         if (riverExport.applyRivers) {
-            const lip = dimension.getSlope(point.x, point.y) > 1 ? 1 : 0 //1 == 45°
-            setZ(point, point.parent.z - profile.depth - lip)
-            setWaterLevel(point, point.parent.z -lip)
+            setZ(point, point.parent.z - profile.depth)
+            setWaterLevel(point, point.parent.z)
+        }
+
+        const isRiverSpine = (p: layerPoint) => {
+            return (p.x == p.parent.x && p.y == p.parent.y)
         }
 
         if (riverExport.annotationColor !== undefined) {
@@ -65,7 +68,7 @@ export const applyRiverLayers = (river: point[], pondSurface: SeenSetReadOnly, r
     const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
         const lip = dimension.getSlope(p.x, p.y) > 1.5 ? 1 : 0 //1 == 45°
         if (riverExport.applyRivers) {
-            setZ(p, Math.max(getZ(p), p.parent.z + lip))
+            setZ(p, Math.max(p.z, p.parent.z + lip))
             annotateAll([p],annotationColor.YELLOW)
         }
     }
