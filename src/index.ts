@@ -32,7 +32,7 @@ const main = () => {
     return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
   };
 
-  type Tile = any;
+  type Tile = { x: number, y: number, hasLayer: any};
   const TILE_SIZE_BITS = 7;
   const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
 
@@ -57,8 +57,8 @@ const main = () => {
     .filter((t) => t.hasLayer(annotations))
     .map((tile) => {
       const start: point = {
-        x: tile.getX() << TILE_SIZE_BITS,
-        y: tile.y << TILE_SIZE_BITS,
+        x: (tile.x << TILE_SIZE_BITS),
+        y: (tile.y << TILE_SIZE_BITS),
       };
       return {
         start: start,
