@@ -1,4 +1,4 @@
-// script.description= create natural creeks and ponds\nMark the starting points of the rivers with a cyan annotation.\nDetailed instructions at https://github.com/IR0NSIGHT/Puddler \nAnnotations: None(0), White(1), Orange(2), Magenta(3), LightBlue(4), Yellow(5), Lime(6), Pink(7), LightGrey(8), Cyan(9), Purple(10), Blue(11), Brown(12), Green(13), Red(14), Black(15)
+// script.description= create natural creeks and ponds\nMark the starting points of the rivers with a cyan annotation.\nDetailed instructions at https://github.com/IR0NSIGHT/Puddler
 
 //script.param.maxSurface.type=integer
 //script.param.maxSurface.description=maximum surface area of ponds
