@@ -12,6 +12,62 @@ import {
 } from "./pathing/river";
 import { applyRiverLayers } from "./pathing/postprocessing";
 
+const TILE_SIZE_BITS = 7;
+const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
+
+const getAllTiles = (): Tile[] =>{
+  const dims = mapDimensions();
+  const tiles = []
+  for (
+      let x = dims.start.x >> TILE_SIZE_BITS;
+      x < dims.end.x >> TILE_SIZE_BITS;
+      x++
+  ) {
+    for (
+        let y = dims.start.y >> TILE_SIZE_BITS;
+        y < dims.end.y >> TILE_SIZE_BITS;
+        y++
+    ) {
+      const tile = dimension.getTile(x, y);
+      if (tile != null) tiles.push(tile);
+    }
+  }
+  return tiles
+}
+
+const allAnnotatedPoints = (tiles: Tile[]): point[] => {
+  const annotations = org.pepsoft.worldpainter.layers.Annotations.INSTANCE;
+  const isCyanAnnotated = (p: point): boolean => {
+    return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
+  };
+
+  const annotatedTiles = tiles
+      .filter((t) => t.hasLayer(annotations))
+      .map((tile) => {
+        const start: point = {
+          x: (tile.x << TILE_SIZE_BITS),
+          y: (tile.y << TILE_SIZE_BITS),
+        };
+        return {
+          start: start,
+          end: { x: start.x + SHIFT_AMOUNT, y: start.y + SHIFT_AMOUNT },
+        };
+      });
+  const startPoints: point[] = []
+  annotatedTiles.forEach((tile) => {
+    for (let x = tile.start.x; x < tile.end.x; x++) {
+      for (let y = tile.start.y; y < tile.end.y; y++) {
+        const point = { x: x, y: y };
+        if (isCyanAnnotated(point)) {
+          startPoints.push(point);
+        }
+      }
+    }
+  });
+  return startPoints
+}
+type Tile = { x: number, y: number, hasLayer: any};
+
 const main = () => {
   const {
     maxSurface,
@@ -23,67 +79,16 @@ const main = () => {
   } = params;
 
   log("max surface = " + maxSurface);
-  const startPoints: point[] = [];
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  const annotations = org.pepsoft.worldpainter.layers.Annotations.INSTANCE;
-  const isCyanAnnotated = (p: point): boolean => {
-    return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
-  };
-
-  type Tile = { x: number, y: number, hasLayer: any};
-  const TILE_SIZE_BITS = 7;
-  const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
-
-  //collect all tiles
-  const tiles: Tile[] = [];
-  for (
-    let x = dims.start.x >> TILE_SIZE_BITS;
-    x < dims.end.x >> TILE_SIZE_BITS;
-    x++
-  ) {
-    for (
-      let y = dims.start.y >> TILE_SIZE_BITS;
-      y < dims.end.y >> TILE_SIZE_BITS;
-      y++
-    ) {
-      const tile = dimension.getTile(x, y);
-      if (tile != null) tiles.push(tile);
-    }
-  }
-
-  const annotatedTiles = tiles
-    .filter((t) => t.hasLayer(annotations))
-    .map((tile) => {
-      const start: point = {
-        x: (tile.x << TILE_SIZE_BITS),
-        y: (tile.y << TILE_SIZE_BITS),
-      };
-      return {
-        start: start,
-        end: { x: start.x + SHIFT_AMOUNT, y: start.y + SHIFT_AMOUNT },
-      };
-    });
-  log("annotated tiles: " + annotatedTiles.length);
-  annotatedTiles.forEach((tile) => {
-    for (let x = tile.start.x; x < tile.end.x; x++) {
-      for (let y = tile.start.y; y < tile.end.y; y++) {
-        const point = { x: x, y: y };
-        if (isCyanAnnotated(point)) {
-          startPoints.push(point);
-        }
-      }
-    }
-  });
+  const startPoints: point[] =  allAnnotatedPoints(getAllTiles())
 
   const passRandom = (p: point, chance: number): boolean => {
     const seed = p.x * p.y + p.x;
     //@ts-expect-error: provided by worldpainter context
     return new java.util.Random(seed).nextFloat() < chance;
   };
-
-  //TODO user option (checkbox) to remove annotation from used points
 
   const t = timer();
   t.start();
@@ -111,14 +116,30 @@ const main = () => {
     .filter((r) => r.path.length > minRiverLength);
 
   log("export target river: " + JSON.stringify(exportTargetRiver));
-
   log("export target puddle: " + JSON.stringify(exportTargetPuddle));
 
+  applyToMap(longRivers, exportTargetRiver, exportTargetPuddle)
+
+  let totalLength = 0;
+  longRivers.forEach((r) => (totalLength += r.path.length));
+  //collect puddles
+  log(
+    "script too =" +
+      t.stop() / 1000 +
+      " seconds for " +
+      rivers.length +
+      " rivers.\nGenerated " +
+      totalLength +
+      " meters of river.",
+  );
+};
+
+const applyToMap = (longRivers: River[], exportTargetRiver: RiverExportTarget, exportTargetPuddle: PuddleExportTarget) => {
   const globalPonds = makeSet();
   longRivers.forEach((river) =>
-    river.ponds.forEach((pond) => {
-      pond.pondSurface.forEach(globalPonds.add);
-    }),
+      river.ponds.forEach((pond) => {
+        pond.pondSurface.forEach(globalPonds.add);
+      }),
   );
 
   const allPonds = collectSortedPondsOfRivers(longRivers);
@@ -129,8 +150,8 @@ const main = () => {
 
   // DEBUG
   longRivers
-    .map((r) => r.path)
-    .forEach((r) => applyRiverLayers(r, globalPonds, exportTargetRiver));
+      .map((r) => r.path)
+      .forEach((r) => applyRiverLayers(r, globalPonds, exportTargetRiver));
   // !DEBUG
 
   const processedPondSurface = makeSet();
@@ -148,20 +169,7 @@ const main = () => {
     pond.pondSurface.forEach(processedPondSurface.add);
     applyPuddleToMap(pond.pondSurface, pond.waterLevel, exportTargetPuddle);
   }
-
-  let totalLength = 0;
-  longRivers.forEach((r) => (totalLength += r.path.length));
-  //collect puddles
-  log(
-    "script too =" +
-      t.stop() / 1000 +
-      " seconds for " +
-      rivers.length +
-      " rivers.\nGenerated " +
-      totalLength +
-      " meters of river.",
-  );
-};
+}
 
 const collectSortedPondsOfRivers = (rivers: River[]): Puddle[] => {
   const allPonds: Puddle[] = [];
