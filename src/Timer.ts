@@ -1,5 +1,5 @@
 export const getTime = (): number => {
-  //@ts-ignore
+  //@ts-expect-error: provided by worldpainter context
   return java.lang.System.currentTimeMillis();
 };
 

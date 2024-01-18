@@ -3,7 +3,6 @@ import {
   point,
   pointsEqual,
   squaredDistance,
-  withZ,
   zPoint,
 } from "../point";
 import { getZ, isWater, setWaterLevel, setZ } from "../terrain";
@@ -11,7 +10,6 @@ import { collectLayers, layerPoint } from "./riverLayer";
 import { annotateAll } from "../puddle";
 import { SeenSetReadOnly } from "../SeenSet";
 import { RiverExportTarget } from "../applyRiver";
-import { log } from "../log";
 import { annotationColor } from "./river";
 
 /**
@@ -70,12 +68,12 @@ export const applyRiverLayers = (
     if (riverExport.annotationColor !== undefined) {
       annotateAll(
         [point],
-        riverExport.annotationColor,
+        isRiverSpine(point) ? annotationColor.RED : riverExport.annotationColor,
       );
     }
   };
 
-  const applyAsRiverBank = (p: layerPoint, profile: riverProfile): void => {
+  const applyAsRiverBank = (p: layerPoint, _profile: riverProfile): void => {
     const lip = dimension.getSlope(p.x, p.y) > 1.5 ? 1 : 0; //1 == 45°
     if (riverExport.applyRivers) {
       setZ(p, Math.max(p.z, p.parent.z + lip));

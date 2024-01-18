@@ -9,7 +9,6 @@ import {
 import { getZ, isWater } from "../terrain";
 import { findPondOutflow, PondGenerationParams, Puddle } from "../puddle";
 import { log } from "../log";
-import * as assert from "assert";
 import { RiverPath } from "./riverLayer";
 
 export const testIfDownhill = (path: RiverPath) => {
@@ -221,7 +220,7 @@ export const insertInSortedQueue = (
   point: parentedPoint,
 ): void => {
   let i = 0;
-  for (let iteratorPoint of sortedQueue) {
+  for (const iteratorPoint of sortedQueue) {
     if (iteratorPoint.distance > point.distance) break;
     i++;
   }

@@ -20,22 +20,13 @@ const main = () => {
     floodPuddles,
     applyRivers,
     annotateAll,
-    growthRate,
   } = params;
 
-  //hello world;
-
-  //if (!floodPuddles && !applyRivers && !annotateAll) {
-  //  log("ERROR: the script will have NO EFFECT with the current settings!\nmust make/annotate puddle and/or river for script to have any effect.");
-  //  return;
-  //}
-
   log("max surface = " + maxSurface);
-  let startPoints: point[] = [];
+  const startPoints: point[] = [];
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  //@ts-ignore
   const annotations = org.pepsoft.worldpainter.layers.Annotations.INSTANCE;
   const isCyanAnnotated = (p: point): boolean => {
     return dimension.getLayerValueAt(annotations, p.x, p.y) == 9;
@@ -88,20 +79,19 @@ const main = () => {
 
   const passRandom = (p: point, chance: number): boolean => {
     const seed = p.x * p.y + p.x;
-    //@ts-ignore
-    const randGen: any = new java.util.Random(seed);
-    return randGen.nextFloat() < chance;
+    //@ts-expect-error: provided by worldpainter context
+    return new java.util.Random(seed).nextFloat() < chance;
   };
 
   //TODO user option (checkbox) to remove annotation from used points
 
-  let t = timer();
+  const t = timer();
   t.start();
-  let allRiverPoints = makeSet();
+  const allRiverPoints = makeSet();
   log("total possible starts: " + startPoints.length);
   const filter = (p: point) => passRandom(p, 1 / blocksPerRiver);
-  let rivers = startPoints.filter(filter).map((start) => {
-    return pathRiverFrom(start, allRiverPoints, { maxSurface: maxSurface });
+  const rivers = startPoints.filter(filter).map((start) => {
+    return pathRiverFrom(start, allRiverPoints, {maxSurface: maxSurface});
   });
 
   const exportTargetPuddle: PuddleExportTarget = {
@@ -144,10 +134,10 @@ const main = () => {
   // !DEBUG
 
   const processedPondSurface = makeSet();
-  for (let pond of allPonds) {
+  for (const pond of allPonds) {
     //find out if this pond is embedded in another pond
     let embeddedPond = false;
-    for (let surfacePoint of pond.pondSurface) {
+    for (const surfacePoint of pond.pondSurface) {
       if (processedPondSurface.has(surfacePoint)) {
         embeddedPond = true;
         break;
@@ -174,7 +164,7 @@ const main = () => {
 };
 
 const collectSortedPondsOfRivers = (rivers: River[]): Puddle[] => {
-  let allPonds: Puddle[] = [];
+  const allPonds: Puddle[] = [];
   rivers.map((r) => r.ponds).forEach((p) => allPonds.push(...p));
   allPonds.sort((a, b) => b.pondSurface.length - a.pondSurface.length);
   return allPonds;

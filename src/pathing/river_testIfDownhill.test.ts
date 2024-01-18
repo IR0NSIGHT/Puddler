@@ -7,7 +7,8 @@ jest.mock("../terrain");
 const mockedGetZ = jest.fn((pos: point, floor: boolean) => {
   return pos.x;
 });
-(terrainModule as any).getZ = mockedGetZ;
+//@ts-expect-error
+(terrainModule).getZ = mockedGetZ;
 
 test("river-never-running-uphill assertion works", () => {
   const riverPath: point[] = [
