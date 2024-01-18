@@ -118,9 +118,9 @@ describe("river pathing", () => {
             return x + 62
         }
         (global as any).params.waterLevel = 62;
-        const {river, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet(), {maxSurface: 1000000})
-        expect(river).toBeDefined()
-        expect(river).toEqual([
+        const { path, ponds} = pathRiverFrom({x: 5, y: 5}, makeSet(), {maxSurface: 1000000})
+        expect(path).toBeDefined()
+        expect(path).toEqual([
             {"x": 5, "y": 5},
             {"x": 4, "y": 5},
             {"x": 3, "y": 5},
@@ -192,10 +192,10 @@ describe("river pathing", () => {
         }
         const start = {x: 0, y: 0};
 
-        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
-    //    expect(river).toEqual([{x: 0, y: 0}, {x: 0, y: 1},{x:1,y:1}])
-        expect(river[0]).toEqual(start)
-        expect(river[river.length - 1]).toEqual({x: 8, y: 8})
+        const {path, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
+        //    expect(river).toEqual([{x: 0, y: 0}, {x: 0, y: 1},{x:1,y:1}])
+        expect(path[0]).toEqual(start)
+        expect(path[path.length - 1]).toEqual({x: 8, y: 8})
         expect(ponds.length).toEqual(2)
         expect(ponds[0].pondSurface).toEqual([{x: 1, y: 1}])
         expect(ponds[0].escapePoint).toEqual({x: 3, y: 3})
@@ -232,8 +232,8 @@ describe("river pathing", () => {
         }
         const start = {x: 8, y: 5};
 
-        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
-        expect(river).toEqual([
+        const {path, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
+        expect(path).toEqual([
             {x: 8, y: 5},
             {x: 7, y: 5},
             {x: 6, y: 5},
@@ -256,8 +256,8 @@ describe("river pathing", () => {
         }
         const start = {x: 15, y: 5};
 
-        const {river, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
-        expect(river).toEqual([
+        const {path, ponds} = pathRiverFrom(start, makeSet(), {maxSurface: 1000000})
+        expect(path).toEqual([
             {x: 15, y: 5},
             {x: 14, y: 5},
             {x: 13, y: 5},

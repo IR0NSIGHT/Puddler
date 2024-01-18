@@ -4,8 +4,9 @@ import {getZ, isWater} from "../terrain";
 import {findPondOutflow, PondGenerationParams, Puddle} from "../puddle";
 import {log} from "../log";
 import * as assert from "assert";
+import {RiverPath} from "./riverLayer";
 
-export const testIfDownhill = (path: point[]) => {
+export const testIfDownhill = (path: RiverPath) => {
     for (let i = 0; i < path.length - 1; i++) {
         const current = getZ(path[i], true);
         const next = getZ(path[i + 1], true)
@@ -139,16 +140,15 @@ const onlyPointsBeforeMerge = (riverPath: parentedPoint[], rivers: SeenSet) => {
     return {merge: didMerge, pointsBeforeMerge: pointsBeforeMerge}
 }
 
+export type River = { path: RiverPath, ponds: Puddle[] }
+
 /**
  * start a new river path at this position
  * @param pos
  * @param rivers
  * @param pondParams
  */
-export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGenerationParams): {
-    river: point[],
-    ponds: { pondSurface: point[], waterLevel: number, depth: number, escapePoint: point | undefined }[]
-} => {
+export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGenerationParams): River => {
     const path: parentedPoint[] = [{point: pos, parent: undefined, distance: -1}];
     let safetyIt = 0;
     const thisRiverSet = makeSet();
@@ -177,7 +177,7 @@ export const pathRiverFrom = (pos: point, rivers: SeenSet, pondParams: PondGener
         }
     }
     path.forEach((p) => rivers.add(p.point));
-    return {river: path.map((a) => a.point), ponds: ponds};
+    return {path: path.map((a) => a.point), ponds: ponds};
 };
 
 
@@ -257,6 +257,6 @@ export function findClosestDrop(
     return {pathToDrop: [], failed: true};
 }
 
-export const capRiverStart = (river: point[], slice: number) => {
+export const capRiverStart = (river: RiverPath, slice: number) => {
     return river.slice(slice);
 };

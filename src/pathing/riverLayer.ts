@@ -3,7 +3,8 @@ import {makeSet, SeenSetReadOnly} from "../SeenSet";
 
 export type layerPoint = zPoint & { parent: zPoint }
 export type layer = layerPoint[]
-export const collectLayers = (river: point[], iterations: number): layer[] => {
+export type RiverPath = point[]
+export const collectLayers = (river: RiverPath, iterations: number): layer[] => {
     const ignoreAsNeighbour = makeSet()
     const layers: layer[] = []
     const firstLayer: layer = river.map(p => ({...withZ(p), parent: withZ(p)}))
