@@ -18,13 +18,11 @@
 //script.param.blocksPerRiver.default=1000
 //script.param.blocksPerRiver.displayName=Spawn Probability
 
-
 //script.param.floodPuddles.type=boolean
 //script.param.floodPuddles.description=flood ponds with water on map.
 //script.param.floodPuddles.optional=false
 //script.param.floodPuddles.default=false
 //script.param.floodPuddles.displayName=Flood Puddles
-
 
 //script.param.applyRivers.type=boolean
 //script.param.applyRivers.description=generate rivers as water on map.

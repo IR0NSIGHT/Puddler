@@ -1,7 +1,6 @@
-
 declare const wp: import("./worldpainterStubs/typescript/ScriptingContext").ScriptingContext;
 declare const world: import("./worldpainterStubs/typescript/World2").World2;
-declare const dimension: import('./worldpainterStubs/typescript/Dimension').Dimension;
+declare const dimension: import("./worldpainterStubs/typescript/Dimension").Dimension;
 declare const org: any; //org.pepsoft java package
 declare const params: {
   maxSurface: number;
@@ -14,4 +13,3 @@ declare const params: {
   stopOnWater: boolean;
   growthRate: number;
 };
-

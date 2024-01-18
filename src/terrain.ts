@@ -1,5 +1,5 @@
-import {point} from "./point";
-import {annotateAll} from "./puddle";
+import { point } from "./point";
+import { annotateAll } from "./puddle";
 
 export function getZ(pos: point, round: boolean = true): number {
   const z = dimension.getHeightAt(pos.x, pos.y);
@@ -21,10 +21,10 @@ export function getTerrainById(terrainId: number) {
 }
 
 export function markPos(pos: point, id: number) {
-  const points = []
+  const points = [];
   for (var i = -4; i <= 4; i++) {
-    points.push({x :pos.x + i, y: pos.y - i});
-    points.push({x :pos.x + i, y: pos.y + i});
+    points.push({ x: pos.x + i, y: pos.y - i });
+    points.push({ x: pos.x + i, y: pos.y + i });
   }
   annotateAll(points, id);
 }

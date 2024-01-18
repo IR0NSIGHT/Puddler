@@ -1,4 +1,4 @@
-import {Dimension} from "./Dimension";
+import { Dimension } from "./Dimension";
 
 type Anchor = any; // Define the actual type for Anchor
 type Generator = any; // Define the actual type for Generator
@@ -15,13 +15,12 @@ type Optional<T> = any; // Define the actual type for Optional
 type Direction = any;
 type Role = any;
 
-type Set<T> = any
-type Map<A,B> = any
+type Set<T> = any;
+type Map<A, B> = any;
 interface Point {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 }
-
 
 type PropertyChangeListener = any;
 type MixedMaterial = any;
@@ -29,150 +28,165 @@ type Serializable = any;
 type ZipOutputStream = any;
 
 export interface World2 {
-    readonly BIOME_ALGORITHM_NONE: number;
-    readonly BIOME_ALGORITHM_CUSTOM_BIOMES: number;
-    readonly BIOME_ALGORITHM_AUTO_BIOMES: number;
-    readonly DEFAULT_MAX_HEIGHT: number;
-    readonly DEFAULT_OCEAN_SEED: number;
-    readonly DEFAULT_LAND_SEED: number;
-    readonly METADATA_KEY_WP_VERSION: string;
-    readonly METADATA_KEY_WP_BUILD: string;
-    readonly METADATA_KEY_TIMESTAMP: string;
-    readonly METADATA_KEY_PLUGINS: string;
-    readonly METADATA_KEY_NAME: string;
+  readonly BIOME_ALGORITHM_NONE: number;
+  readonly BIOME_ALGORITHM_CUSTOM_BIOMES: number;
+  readonly BIOME_ALGORITHM_AUTO_BIOMES: number;
+  readonly DEFAULT_MAX_HEIGHT: number;
+  readonly DEFAULT_OCEAN_SEED: number;
+  readonly DEFAULT_LAND_SEED: number;
+  readonly METADATA_KEY_WP_VERSION: string;
+  readonly METADATA_KEY_WP_BUILD: string;
+  readonly METADATA_KEY_TIMESTAMP: string;
+  readonly METADATA_KEY_PLUGINS: string;
+  readonly METADATA_KEY_NAME: string;
 
-    getChangeNo(): number;
+  getChangeNo(): number;
 
-    getName(): string;
+  getName(): string;
 
-    setName(name: string): void;
+  setName(name: string): void;
 
-    isCreateGoodiesChest(): boolean;
+  isCreateGoodiesChest(): boolean;
 
-    setCreateGoodiesChest(createGoodiesChest: boolean): void;
+  setCreateGoodiesChest(createGoodiesChest: boolean): void;
 
-    getTileCoordinates(worldX: number, worldY: number): Point;
+  getTileCoordinates(worldX: number, worldY: number): Point;
 
-    getTileCoordinates(worldCoords: Point): Point;
+  getTileCoordinates(worldCoords: Point): Point;
 
-    getSpawnPoint(): Point;
+  getSpawnPoint(): Point;
 
-    setSpawnPoint(spawnPoint: Point): void;
+  setSpawnPoint(spawnPoint: Point): void;
 
-    getImportedFrom(): File;
+  getImportedFrom(): File;
 
-    setImportedFrom(importedFrom: File): void;
+  setImportedFrom(importedFrom: File): void;
 
-    isMapFeatures(): boolean;
+  isMapFeatures(): boolean;
 
-    setMapFeatures(mapFeatures: boolean): void;
+  setMapFeatures(mapFeatures: boolean): void;
 
-    getGameType(): GameType;
+  getGameType(): GameType;
 
-    setGameType(gameType: GameType): void;
+  setGameType(gameType: GameType): void;
 
-    addPropertyChangeListener(listener: PropertyChangeListener): void;
+  addPropertyChangeListener(listener: PropertyChangeListener): void;
 
-    addPropertyChangeListener(propertyName: string, listener: PropertyChangeListener): void;
+  addPropertyChangeListener(
+    propertyName: string,
+    listener: PropertyChangeListener,
+  ): void;
 
-    removePropertyChangeListener(listener: PropertyChangeListener): void;
+  removePropertyChangeListener(listener: PropertyChangeListener): void;
 
-    removePropertyChangeListener(propertyName: string, listener: PropertyChangeListener): void;
+  removePropertyChangeListener(
+    propertyName: string,
+    listener: PropertyChangeListener,
+  ): void;
 
-    getDimension(dim: number): Dimension; // Deprecated
-    isDimensionPresent(anchor: Anchor): boolean;
+  getDimension(dim: number): Dimension; // Deprecated
+  isDimensionPresent(anchor: Anchor): boolean;
 
-    getDimension(anchor: Anchor): Dimension;
+  getDimension(anchor: Anchor): Dimension;
 
-    getDimensions(): Set<Dimension>;
+  getDimensions(): Set<Dimension>;
 
-    getDimensionsWithRole(role: Role, inverted: boolean, id: number): Set<Dimension>;
+  getDimensionsWithRole(
+    role: Role,
+    inverted: boolean,
+    id: number,
+  ): Set<Dimension>;
 
-    addDimension(dimension: Dimension): void;
+  addDimension(dimension: Dimension): void;
 
-    removeDimension(anchor: Anchor): Dimension;
+  removeDimension(anchor: Anchor): Dimension;
 
-    getMixedMaterial(index: number): MixedMaterial;
+  getMixedMaterial(index: number): MixedMaterial;
 
-    setMixedMaterial(index: number, material: MixedMaterial): void;
+  setMixedMaterial(index: number, material: MixedMaterial): void;
 
-    getMinHeight(): number;
+  getMinHeight(): number;
 
-    setMinHeight(minHeight: number): void;
+  setMinHeight(minHeight: number): void;
 
-    getMaxHeight(): number;
+  getMaxHeight(): number;
 
-    setMaxHeight(maxHeight: number): void;
+  setMaxHeight(maxHeight: number): void;
 
-    getGenerator(): Generator; // Deprecated
-    getPlatform(): Platform;
+  getGenerator(): Generator; // Deprecated
+  getPlatform(): Platform;
 
-    setPlatform(platform: Platform): void;
+  setPlatform(platform: Platform): void;
 
-    isAskToConvertToAnvil(): boolean;
+  isAskToConvertToAnvil(): boolean;
 
-    setAskToConvertToAnvil(askToConvertToAnvil: boolean): void;
+  setAskToConvertToAnvil(askToConvertToAnvil: boolean): void;
 
-    isAskToRotate(): boolean;
+  isAskToRotate(): boolean;
 
-    setAskToRotate(askToRotate: boolean): void;
+  setAskToRotate(askToRotate: boolean): void;
 
-    getUpIs(): Direction;
+  getUpIs(): Direction;
 
-    setUpIs(upIs: Direction): void;
+  setUpIs(upIs: Direction): void;
 
-    isAllowMerging(): boolean;
+  isAllowMerging(): boolean;
 
-    setAllowMerging(allowMerging: boolean): void;
+  setAllowMerging(allowMerging: boolean): void;
 
-    isAllowCheats(): boolean;
+  isAllowCheats(): boolean;
 
-    setAllowCheats(allowCheats: boolean): void;
+  setAllowCheats(allowCheats: boolean): void;
 
-    getGeneratorOptions(): string; // Deprecated
-    isExtendedBlockIds(): boolean;
+  getGeneratorOptions(): string; // Deprecated
+  isExtendedBlockIds(): boolean;
 
-    setExtendedBlockIds(extendedBlockIds: boolean): void;
+  setExtendedBlockIds(extendedBlockIds: boolean): void;
 
-    getDifficulty(): number;
+  getDifficulty(): number;
 
-    setDifficulty(difficulty: number): void;
+  setDifficulty(difficulty: number): void;
 
-    getExportSettings(): WorldExportSettings;
+  getExportSettings(): WorldExportSettings;
 
-    setExportSettings(exportSettings: WorldExportSettings): void;
+  setExportSettings(exportSettings: WorldExportSettings): void;
 
-    getHistory(): HistoryEntry[];
+  getHistory(): HistoryEntry[];
 
-    addHistoryEntry(key: number, ...args: Serializable[]): void;
+  addHistoryEntry(key: number, ...args: Serializable[]): void;
 
-    getMetadata(): Map<string, any>;
+  getMetadata(): Map<string, any>;
 
-    setMetadata(metadata: Map<string, any>): void;
+  setMetadata(metadata: Map<string, any>): void;
 
-    getBorderSettings(): BorderSettings;
+  getBorderSettings(): BorderSettings;
 
-    getMergedWith(): File;
+  getMergedWith(): File;
 
-    setMergedWith(mergedWith: File): void;
+  setMergedWith(mergedWith: File): void;
 
-    getDataPacks(): File[];
+  getDataPacks(): File[];
 
-    setDataPacks(dataPacks: File[]): void;
+  setDataPacks(dataPacks: File[]): void;
 
-    getAttribute<T>(key: AttributeKey<T>): Optional<T>;
+  getAttribute<T>(key: AttributeKey<T>): Optional<T>;
 
-    setAttribute<T>(key: AttributeKey<T>, value: T): void;
+  setAttribute<T>(key: AttributeKey<T>, value: T): void;
 
-    transform(transform: CoordinateTransform, progressReceiver: ProgressReceiver): void;
+  transform(
+    transform: CoordinateTransform,
+    progressReceiver: ProgressReceiver,
+  ): void;
 
-    transform(anchor: Anchor, transform: CoordinateTransform, progressReceiver: ProgressReceiver): void;
+  transform(
+    anchor: Anchor,
+    transform: CoordinateTransform,
+    progressReceiver: ProgressReceiver,
+  ): void;
 
-    clearLayerData(layer: Layer): void;
+  clearLayerData(layer: Layer): void;
 
-    measureSize(): number;
+  measureSize(): number;
 
-    save(out: ZipOutputStream): void;
-
-
+  save(out: ZipOutputStream): void;
 }

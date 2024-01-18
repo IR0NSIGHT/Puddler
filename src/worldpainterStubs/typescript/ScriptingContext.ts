@@ -1,4 +1,4 @@
-import {World2} from "./World2";
+import { World2 } from "./World2";
 
 type GetWorldOp = any;
 type GetLayerOp = any;
@@ -18,20 +18,20 @@ type MixedMaterial = any;
 type Layer = any;
 
 export interface ScriptingContext {
-    getVersion(): string;
-    getWorld(): GetWorldOp;
-    getLayer(): GetLayerOp;
-    getTerrain(): GetTerrainOp;
-    createWorld(): ImportHeightMapOp;
-    exportWorld(world: World2): ExportWorldOp;
-    mergeWorld(): MergeWorldOp; // TODO: Define the MergeWorldOp type
-    saveWorld(world: World2): SaveWorldOp;
-    getHeightMap(): GetHeightMapOp;
-    applyHeightMap(heightMap: HeightMap): MappingOp;
-    applyLayer(layer: Layer): MappingOp;
-    applyTerrain(terrainIndex: number): MappingOp;
-    installCustomTerrain(terrain: MixedMaterial): InstallCustomTerrainOp;
-    createFilter(): CreateFilterOp;
-    getMapFormat(): GetPlatformOp;
-    checkGoCalled(commandName: string): void;
+  getVersion(): string;
+  getWorld(): GetWorldOp;
+  getLayer(): GetLayerOp;
+  getTerrain(): GetTerrainOp;
+  createWorld(): ImportHeightMapOp;
+  exportWorld(world: World2): ExportWorldOp;
+  mergeWorld(): MergeWorldOp; // TODO: Define the MergeWorldOp type
+  saveWorld(world: World2): SaveWorldOp;
+  getHeightMap(): GetHeightMapOp;
+  applyHeightMap(heightMap: HeightMap): MappingOp;
+  applyLayer(layer: Layer): MappingOp;
+  applyTerrain(terrainIndex: number): MappingOp;
+  installCustomTerrain(terrain: MixedMaterial): InstallCustomTerrainOp;
+  createFilter(): CreateFilterOp;
+  getMapFormat(): GetPlatformOp;
+  checkGoCalled(commandName: string): void;
 }
