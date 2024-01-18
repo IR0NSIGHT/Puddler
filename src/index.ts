@@ -11,6 +11,7 @@ import {
   River,
 } from "./pathing/river";
 import { applyRiverLayers } from "./pathing/postprocessing";
+import {getZ} from "./terrain";
 
 const TILE_SIZE_BITS = 7;
 const SHIFT_AMOUNT = 1 << TILE_SIZE_BITS; // Equivalent to 128
@@ -82,9 +83,13 @@ const main = () => {
   const dims = mapDimensions();
   log("map dimension: " + JSON.stringify(dims));
 
-  const startPoints: point[] =  allAnnotatedPoints(getAllTiles())
+  const sortHighestFirst = (ps: point[]): point[] => {
+    ps.sort((a,b) => getZ(b) - getZ(a));
+    return ps;
+  }
+  const startPoints: point[] = sortHighestFirst(allAnnotatedPoints(getAllTiles()))
 
-  const passRandom = (p: point, chance: number): boolean => {
+   const passRandom = (p: point, chance: number): boolean => {
     const seed = p.x * p.y + p.x;
     //@ts-expect-error: provided by worldpainter context
     return new java.util.Random(seed).nextFloat() < chance;
