@@ -3,7 +3,7 @@
 Worldpainter script that creates small rivers and ponds across the map
 
 downloads: https://github.com/IR0NSIGHT/Puddler/releases  
-github: https://github.com/IR0NSIGHT/Puddler
+github: https://github.com/IR0NSIGHT/Puddler  
 planetMc: https://www.planetminecraft.com/mod/puddler-js-worldpainter-script/
 
 |               1                |                  1                  |
