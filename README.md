@@ -38,4 +38,4 @@ https://youtu.be/kUJXZ7FjP7Y
 - Flood Puddles: Puddles (Lakes) will be filled with water
 - Apply Rivers: Rivers will be filled with water
 - Apply as Annotations: Rivers and Puddles will be annotated in Orange and Purple
-- Ocean Water Leve: Rivers will stop once they reach this height. Should match your ocean level.
+- Ocean Water Level: Rivers will stop once they reach this height. Should match your ocean level.
